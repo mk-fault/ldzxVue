@@ -46,12 +46,3 @@ html, body {
 .form-box .line {
     text-align: center;
 }
-
-.el-time-panel__content::after,
-.el-time-panel__content::before {
-    margin-top: -7px;
-}
-
-.el-time-spinner__wrapper .el-scrollbar__wrap:not(.el-scrollbar__wrap--hidden-default) {
-    padding-bottom: 0;
-}

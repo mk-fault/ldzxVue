@@ -26,7 +26,7 @@
   </div>
 
   <!-- 修改密码弹窗 -->
-  <el-dialog v-model="dialogFormVisible" title="Shipping address">
+  <el-dialog v-model="dialogFormVisible" title="修改密码" width="25%">
     <el-form :model="form">
       <el-form-item label="教师姓名" :label-width="formLabelWidth">
         <el-input v-model="editForm.username" autocomplete="off" disabled/>

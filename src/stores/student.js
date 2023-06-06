@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { loginAPI, resetAPI } from "@/apis/teacher";
-import { getStudentAPI } from '@/apis/student'
+import { getStudentAPI, updateStudentAPI } from '@/apis/student'
 
 import { ElMessage } from 'element-plus'
 import 'element-plus/theme-chalk/el-message.css'
@@ -21,10 +21,27 @@ export const useStudentStore = defineStore('student', () => {
       }
     })
   }
+  // 修改学生信息
+  const updateStudent = async (data) => {
+    let flag = false
+    let eMsg = null
+    await updateStudentAPI(data).then((res,e) => {
+        console.log(res)
+        if (res.status === 200) {
+            flag = true
+        } else {
+            eMsg = res.data
+            // ElMessageBox.alert(res.data, '提示')
+            flag = false
+        }
+    })
+    return {flag, eMsg}
+  }
 
   // return
   return {
     studentInfo,
     getStudentInfo,
+    updateStudent
   }
 })

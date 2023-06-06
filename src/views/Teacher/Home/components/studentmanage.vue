@@ -1,169 +1,8 @@
 <script setup>
 import { ref, reactive } from "vue";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage } from "element-plus";
 import { useStudentStore } from "@/stores/student";
-
-
-const studentdata = ref([
-  {
-    id: "513322200003140011",
-    student_id: "18041817",
-    name: "张三",
-    class_num: 1,
-    sex: 1,
-    admission_date: 2023,
-    create_time: "2023-05-11T15:27:31.796421",
-    update_time: "2023-06-02T21:38:45.944248",
-    access_count: 56,
-  },
-  {
-    id: "513323197501303516",
-    student_id: "18041818",
-    name: "张四",
-    class_num: 1,
-    sex: 0,
-    admission_date: 2023,
-    create_time: "2023-05-11T15:53:16.192572",
-    update_time: "2023-05-11T15:53:16.192600",
-    access_count: 0,
-  },
-  {
-    id: "513323197501303517",
-    student_id: "18041819",
-    name: "张五",
-    class_num: 1,
-    sex: 1,
-    admission_date: 2000,
-    create_time: "2023-05-12T10:02:28.006249",
-    update_time: "2023-05-12T10:02:28.006278",
-    access_count: 0,
-  },
-  {
-    id: "513323197501303518",
-    student_id: "18041820",
-    name: "张六",
-    class_num: 1,
-    sex: 0,
-    admission_date: 2018,
-    create_time: "2023-05-12T10:04:01.206830",
-    update_time: "2023-05-12T10:04:01.206851",
-    access_count: 0,
-  },
-  {
-    id: "513323197501303519",
-    student_id: "18041821",
-    name: "张八",
-    class_num: 5,
-    sex: 1,
-    admission_date: 2023,
-    create_time: "2023-05-12T10:04:13.445381",
-    update_time: "2023-05-15T15:22:28.333694",
-    access_count: 0,
-  },
-  {
-    id: "513323197501303520",
-    student_id: "18041822",
-    name: "李一",
-    class_num: 1,
-    sex: 1,
-    admission_date: 2080,
-    create_time: "2023-06-05T15:39:05.519721",
-    update_time: "2023-06-05T15:39:05.519746",
-    access_count: 0,
-  },
-  {
-    id: "513323197501303521",
-    student_id: "18041823",
-    name: "李二",
-    class_num: 2,
-    sex: 0,
-    admission_date: 2080,
-    create_time: "2023-06-05T15:39:05.527427",
-    update_time: "2023-06-05T15:39:05.527449",
-    access_count: 0,
-  },
-  {
-    id: "513323197501303522",
-    student_id: "18041824",
-    name: "李三",
-    class_num: 3,
-    sex: 1,
-    admission_date: 2080,
-    create_time: "2023-06-05T15:39:05.534207",
-    update_time: "2023-06-05T15:39:05.534230",
-    access_count: 0,
-  },
-  {
-    id: "513323197501303523",
-    student_id: "18041825",
-    name: "李四",
-    class_num: 4,
-    sex: 1,
-    admission_date: 2080,
-    create_time: "2023-06-05T15:39:05.540520",
-    update_time: "2023-06-05T15:39:05.540542",
-    access_count: 0,
-  },
-  {
-    id: "513323197501303524",
-    student_id: "18041826",
-    name: "李五",
-    class_num: 5,
-    sex: 0,
-    admission_date: 2080,
-    create_time: "2023-06-05T15:39:05.543948",
-    update_time: "2023-06-05T15:39:05.543972",
-    access_count: 0,
-  },
-  {
-    id: "513323197501303523",
-    student_id: "18041825",
-    name: "李四",
-    class_num: 4,
-    sex: 1,
-    admission_date: 2080,
-    create_time: "2023-06-05T15:39:05.540520",
-    update_time: "2023-06-05T15:39:05.540542",
-    access_count: 0,
-  },
-  {
-    id: "513323197501303524",
-    student_id: "18041826",
-    name: "李五",
-    class_num: 5,
-    sex: 0,
-    admission_date: 2080,
-    create_time: "2023-06-05T15:39:05.543948",
-    update_time: "2023-06-05T15:39:05.543972",
-    access_count: 0,
-  },
-  {
-    id: "513323197501303523",
-    student_id: "18041825",
-    name: "李四",
-    class_num: 4,
-    sex: 1,
-    admission_date: 2080,
-    create_time: "2023-06-05T15:39:05.540520",
-    update_time: "2023-06-05T15:39:05.540542",
-    access_count: 0,
-  },
-]);
-const total = ref(80);
-
-const editVisible = ref(false);
-const handelEdit = () => {
-  editVisible.value = true;
-};
-
-const editForm = ref({
-  id: "513322200003140011",
-  student_id: "18041817",
-  name: "张三",
-  class_num: 1,
-  sex: 1,
-  admission_date: 2023,
-});
+import 'element-plus/theme-chalk/el-message.css' 
 
 // 筛选字段
 const filterField = ref({
@@ -174,21 +13,23 @@ const filterField = ref({
   min_admission_date: "最小入学年份",
   max_student_id: "最大学号",
   min_student_id: "最小学号",
-  student_id: "学号",
+  student_id: "准考证号",
   class_num: "班级",
   name: "姓名",
 });
+
 // 排序字段
 const orderField = ref({
   id: "身份证号",
   sex: "性别",
   admission_date: "入学年份",
-  student_id: "学号",
+  student_id: "准考证号",
   class_num: "班级",
   name: "姓名",
   create_time: "创建时间",
   update_time: "更新时间",
 });
+//排序方法
 const orderMethod = ref({
   "-": "降序",
   "+": "升序",
@@ -198,6 +39,87 @@ const order2 = ref("");
 const orderby = computed(() => {
     return order2.value + order1.value;
 })
+
+
+// 编辑学生信息
+const editVisible = ref(false);
+const handleEdit = (row) => {
+    editForm.value = row;
+    editVisible.value = true;
+};
+// 编辑学生信息表单
+const editForm = ref({
+  id: "",
+  student_id: "",
+  name: "",
+  class_num: "",
+  sex: "",
+  admission_date: "",
+});
+// 转换错误信息格式
+function convertErrorMsgToStringWithField(eMsg, Field) {
+  let errorMsg = '';
+
+  for (let key in eMsg) {
+    if (eMsg.hasOwnProperty(key)) {
+      const messages = eMsg[key];
+      const fieldLabel = Field[key] || key; // 获取字段的说明，若不存在说明则使用字段名作为默认值
+
+      for (let i = 0; i < messages.length; i++) {
+        errorMsg += fieldLabel + ': ' + messages[i] + '\n';
+      }
+    }
+  }
+  return errorMsg.trim();
+}
+// 字段说明
+const Field = {
+  id: "身份证号",
+  sex: "性别",
+  admission_date: "入学年份",
+  student_id: "准考证号",
+  class_num: "班级",
+  name: "姓名"
+};
+// 修改学生信息
+const doEdit = () => {
+    ElMessageBox.confirm("确认修改学生信息？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+    }).then(async() => {
+        const res = await studentStore.updateStudent(editForm.value)
+        if (res.flag) {
+            ElMessage.success("修改成功");
+            editVisible.value = false;
+        } else {
+            const errorMsg = convertErrorMsgToStringWithField(res.eMsg,Field)
+            ElMessageBox.alert(errorMsg, '提示')
+            ElMessage.error("修改失败");
+            await studentStore.getStudentInfo(transformQuery(query.value))
+        }
+        
+    }).catch(() => {
+        ElMessage({
+            type: "info",
+            message: "已取消修改",
+        });
+    })
+}
+
+// 新增学生
+const addVisible = ref(false)
+const handleAdd = () => {
+    addVisible.value = true;
+}
+const addForm = ref({
+  id: "",
+  student_id: "",
+  name: "",
+  class_num: '',
+  sex: '',
+  admission_date: '',
+});
 
 // 查询参数
 const query = ref({
@@ -279,7 +201,7 @@ const handlePageChange = async(cp) => {
 
         <!-- 右侧 -->
         <el-button type="success" style="float: right">从Excel导入</el-button>
-        <el-button type="primary" style="float: right">新增</el-button>
+        <el-button type="primary" style="float: right" @click="handleAdd">新增</el-button>
         <div class="ordersel">
           <el-select
             v-model="order1"
@@ -353,8 +275,8 @@ const handlePageChange = async(cp) => {
           width="100"
         ></el-table-column>
         <el-table-column label="操作" width="220" align="center">
-          <template #default>
-            <el-button type="primary" @click="handelEdit">编辑</el-button>
+          <template #default="scope">
+            <el-button type="primary" @click="handleEdit(scope.row)">编辑</el-button>
             <el-button type="danger">删除</el-button>
           </template>
         </el-table-column>
@@ -379,7 +301,7 @@ const handlePageChange = async(cp) => {
           <el-input v-model="editForm.name"></el-input>
         </el-form-item>
         <el-form-item label="身份证号">
-          <el-input v-model="editForm.id"></el-input>
+          <el-input v-model="editForm.id" disabled></el-input>
         </el-form-item>
         <el-form-item label="准考证号">
           <el-input v-model="editForm.student_id"></el-input>
@@ -397,12 +319,46 @@ const handlePageChange = async(cp) => {
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="editVisible = false">取 消</el-button>
-          <el-button type="primary" @click="editVisible = false"
+          <el-button type="primary" @click="doEdit"
             >确 定</el-button
           >
         </span>
       </template>
     </el-dialog>
+
+    <!-- 新增弹出框 -->
+    <el-dialog title="新增学生" v-model="addVisible" width="25%">
+      <el-form label-width="70px">
+        <el-form-item label="学生姓名">
+          <el-input v-model="addForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="身份证号">
+          <el-input v-model="addForm.id"></el-input>
+        </el-form-item>
+        <el-form-item label="准考证号">
+          <el-input v-model="addForm.student_id"></el-input>
+        </el-form-item>
+        <el-form-item label="性别">
+          <el-input v-model="addForm.sex"></el-input>
+        </el-form-item>
+        <el-form-item label="班级">
+          <el-input v-model="addForm.class_num"></el-input>
+        </el-form-item>
+        <el-form-item label="入学时间">
+          <el-input v-model="addForm.admission_date"></el-input>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="addVisible = false">取 消</el-button>
+          <el-button type="primary" @click="addVisible = false"
+            >确 定</el-button
+          >
+        </span>
+      </template>
+    </el-dialog>
+
+
   </div>
 </template>
 

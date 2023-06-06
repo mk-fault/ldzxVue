@@ -7,3 +7,19 @@ export const getStudentAPI = (params = {}) => {
       params
     })
   }
+
+// 修改学生信息API
+export const updateStudentAPI = ({id,student_id,name,sex,class_num,admission_date}) => {
+    return httpInstance({
+      url: `student/students/${id}/`,
+      method: "PUT",
+      data: {
+        id,
+        student_id,
+        name,
+        sex,
+        class_num,
+        admission_date
+      }
+    })
+  }
