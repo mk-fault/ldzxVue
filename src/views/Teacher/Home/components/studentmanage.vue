@@ -1,11 +1,8 @@
 <script setup>
 import { ref, reactive } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useStudentStore } from "@/stores/student";
 
-const query = reactive({
-  type: "",
-  page: 1,
-});
 
 const studentdata = ref([
   {
@@ -118,7 +115,41 @@ const studentdata = ref([
     update_time: "2023-06-05T15:39:05.543972",
     access_count: 0,
   },
+  {
+    id: "513323197501303523",
+    student_id: "18041825",
+    name: "李四",
+    class_num: 4,
+    sex: 1,
+    admission_date: 2080,
+    create_time: "2023-06-05T15:39:05.540520",
+    update_time: "2023-06-05T15:39:05.540542",
+    access_count: 0,
+  },
+  {
+    id: "513323197501303524",
+    student_id: "18041826",
+    name: "李五",
+    class_num: 5,
+    sex: 0,
+    admission_date: 2080,
+    create_time: "2023-06-05T15:39:05.543948",
+    update_time: "2023-06-05T15:39:05.543972",
+    access_count: 0,
+  },
+  {
+    id: "513323197501303523",
+    student_id: "18041825",
+    name: "李四",
+    class_num: 4,
+    sex: 1,
+    admission_date: 2080,
+    create_time: "2023-06-05T15:39:05.540520",
+    update_time: "2023-06-05T15:39:05.540542",
+    access_count: 0,
+  },
 ]);
+const total = ref(80);
 
 const editVisible = ref(false);
 const handelEdit = () => {
@@ -134,6 +165,7 @@ const editForm = ref({
   admission_date: 2023,
 });
 
+// 筛选字段
 const filterField = ref({
   id: "身份证号",
   sex: "性别",
@@ -146,6 +178,79 @@ const filterField = ref({
   class_num: "班级",
   name: "姓名",
 });
+// 排序字段
+const orderField = ref({
+  id: "身份证号",
+  sex: "性别",
+  admission_date: "入学年份",
+  student_id: "学号",
+  class_num: "班级",
+  name: "姓名",
+  create_time: "创建时间",
+  update_time: "更新时间",
+});
+const orderMethod = ref({
+  "-": "降序",
+  "+": "升序",
+});
+const order1 = ref("");
+const order2 = ref("");
+const orderby = computed(() => {
+    return order2.value + order1.value;
+})
+
+// 查询参数
+const query = ref({
+  type: "",
+  parama: "",
+  orderby: orderby.value,
+  page: 1,
+});
+watch(() =>{
+    query.value.orderby = orderby.value;
+})
+
+// 转换query格式
+function transformQuery(query) {
+  return {
+    [query.type]: query.parama,
+    ordering: query.orderby,
+    page: query.page,
+  };
+}
+
+// 获取学生列表
+const studentStore = useStudentStore()
+
+onMounted(() => {
+    studentStore.getStudentInfo()
+})
+
+// 过滤和排序
+const doFilter = async() => {
+  await studentStore.getStudentInfo(transformQuery(query.value))
+};
+
+// 重置过滤和排序
+const doFilterReset = async() => {
+    query.value = {
+        type: "",
+        parama: "",
+        orderby: orderby.value,
+        page: 1,
+    };
+    order1.value = "";
+    order2.value = "";
+    await studentStore.getStudentInfo()
+    console.log(studentStore.studentInfo.count)
+}
+
+// 翻页
+const handlePageChange = async(cp) => {
+    query.value.page = cp;
+    await studentStore.getStudentInfo(transformQuery(query.value))
+}
+
 </script>
 
 <template>
@@ -165,16 +270,47 @@ const filterField = ref({
           ></el-option>
         </el-select>
         <el-input
-          v-model="query.name"
-          placeholder="用户名"
+          v-model="query.parama"
+          :placeholder="filterField[query.type]"
           class="handle-input mr10"
         ></el-input>
-        <el-button type="primary">搜索</el-button>
+        <el-button type="primary" @click="doFilter">搜索</el-button>
+        <el-button type="primary" @click="doFilterReset">重置</el-button>
+
+        <!-- 右侧 -->
         <el-button type="success" style="float: right">从Excel导入</el-button>
         <el-button type="primary" style="float: right">新增</el-button>
+        <div class="ordersel">
+          <el-select
+            v-model="order1"
+            placeholder="排序字段"
+            class="handle-select mr10"
+          >
+            <el-option
+              v-for="(v, k) in orderField"
+              :key="k"
+              :label="v"
+              :value="k"
+            ></el-option>
+          </el-select>
+          <el-select
+            v-model="order2"
+            placeholder="排序方式"
+            class="handle-select mr10"
+          >
+            <el-option
+              v-for="(v, k) in orderMethod"
+              :key="k"
+              :label="v"
+              :value="k"
+            ></el-option>
+          </el-select>
+        </div>
       </div>
+      
+      <!-- 表格 -->
       <el-table
-        :data="studentdata"
+        :data="studentStore.studentInfo.results"
         border
         class="table"
         ref="multipleTable"
@@ -223,12 +359,14 @@ const filterField = ref({
           </template>
         </el-table-column>
       </el-table>
+
+      <!-- 分页 -->
       <div class="pagination">
         <el-pagination
           background
           layout="prev, pager, next"
           :current-page="query.page"
-          :total="80"
+          :total="studentStore.studentInfo.count"
           @current-change="handlePageChange"
         ></el-pagination>
       </div>
@@ -269,6 +407,10 @@ const filterField = ref({
 </template>
 
 <style scoped>
+
+.ordersel {
+    float :left;
+}
 .container {
   padding: 30px;
   background: #fff;
