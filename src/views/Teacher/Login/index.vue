@@ -60,7 +60,7 @@ const doLogin = () => {
       if (validateCode(code,Code.value)) {
         await userStore.getUserInfo({ username, password })
         ElMessage.success('登录成功')
-        router.replace('/teacher/home')
+        router.replace('/teacher')
       }
 
     } else {
