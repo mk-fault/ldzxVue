@@ -107,6 +107,28 @@ const doEdit = () => {
     })
 }
 
+// 删除学生信息
+const handleDelete = (row) => {
+    ElMessageBox.confirm("确认删除学生信息？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+    }).then(async() => {
+        const flag = await studentStore.deleteStudent(row.id)
+        if (flag) {
+            ElMessage.success("删除成功");
+        } else {
+            ElMessage.error("删除失败,请刷新后重试");
+        }
+        await studentStore.getStudentInfo(transformQuery(query.value))
+    }).catch(() => {
+        ElMessage({
+            type: "info",
+            message: "已取消删除",
+        });
+    })
+}
+
 // 新增学生
 const addVisible = ref(false)
 const handleAdd = () => {
@@ -277,7 +299,7 @@ const handlePageChange = async(cp) => {
         <el-table-column label="操作" width="220" align="center">
           <template #default="scope">
             <el-button type="primary" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="danger">删除</el-button>
+            <el-button type="danger" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
