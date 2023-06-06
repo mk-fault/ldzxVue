@@ -69,7 +69,7 @@ const router = useRouter();
 const handleCommand = (command) => {
   if (command == "loginout") {
     userStore.clearUserInfo();
-    router.push("teacher/login");
+    router.push("/teacher/login");
   } else if (command == "reset") {
     dialogFormVisible.value = true;
   }
@@ -79,7 +79,7 @@ const handleCommand = (command) => {
 const doReset = async() => {
   await userStore.resetPassword(editForm.value)
   if (Object.keys(userStore.userInfo).length === 0) {
-  router.replace('/teacher/login')
+  router.push('/teacher/login')
   ElMessage.success('修改成功,请重新登录');
 }
 }
