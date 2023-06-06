@@ -2,7 +2,7 @@
 import axios from "axios";
 import { ElMessage } from 'element-plus'
 import 'element-plus/theme-chalk/el-message.css'
-// import { useUserStore } from "@/stores/user";
+import { useUserStore } from "@/stores/user";
 import router from "@/router";
 
 const httpInstance = axios.create({
@@ -14,12 +14,12 @@ const httpInstance = axios.create({
 httpInstance.interceptors.request.use(
   (config) => {
     // 从pinia中获取token
-    // const userStore = useUserStore();
-    // // 拼接token
-    // const token = userStore.userInfo.token
-    // if (token) {
-    // config.headers.Authorization = `Bearer ${token}`
-    // }
+    const userStore = useUserStore();
+    // 拼接token
+    const token = userStore.userInfo.access
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
     return config;
   },
   (e) => Promise.reject(e)
@@ -27,18 +27,16 @@ httpInstance.interceptors.request.use(
 
 // axios响应拦截器
 httpInstance.interceptors.response.use(
-  (res) => res.data,
+  (res) => res,
   (e) => {
     // 统一错误提示
-    ElMessage.error(e.response.data.msg);
+    // ElMessage.error(e.response.data.msg);
     // 401错误处理
-    // const userStore = useUserStore();
-    // if (e.response.status === 401) {
-    //   userStore.clearUserInfo()
-    //   router.push('/login')
-    // }
-
-    return Promise.reject(e);
+    if (e.response.status === 401) {
+      router.push('/teacher/login')
+    }
+    // return Promise.reject(e);
+    return e.response
   }
 );
 

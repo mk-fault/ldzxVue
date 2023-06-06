@@ -3,26 +3,18 @@
     <div class="logo">通知书后台管理系统</div>
     <div class="header-right">
       <div class="header-user-con">
-        <!-- 用户头像 -->
-        
         <!-- 用户名下拉菜单 -->
         <el-dropdown class="user-name" trigger="click" @command="handleCommand">
           <span class="el-dropdown-link">
+            <!-- 用户头像 -->
             <i class="iconfont icon-touxiang"></i>
-            <span style="margin-left:5px;">{{ username }}</span>
-            <el-icon class="el-icon--right">
-              <arrow-down />
-            </el-icon>
+            <span style="margin-left: 5px">{{ username }}</span>
+            <i class="iconfont icon-xiala" id="xiala"></i>
           </span>
           <template #dropdown>
             <el-dropdown-menu>
-              <a
-                href="https://github.com/lin-xin/vue-manage-system"
-                target="_blank"
-              >
-                <el-dropdown-item>项目仓库</el-dropdown-item>
-              </a>
-              <el-dropdown-item command="user">个人中心</el-dropdown-item>
+              <el-dropdown-item>用户组：{{ role }}</el-dropdown-item>
+              <el-dropdown-item command="reset">修改密码</el-dropdown-item>
               <el-dropdown-item divided command="loginout"
                 >退出登录</el-dropdown-item
               >
@@ -32,31 +24,85 @@
       </div>
     </div>
   </div>
+
+  <!-- 修改密码弹窗 -->
+  <el-dialog v-model="dialogFormVisible" title="Shipping address">
+    <el-form :model="form">
+      <el-form-item label="教师姓名" :label-width="formLabelWidth">
+        <el-input v-model="editForm.username" autocomplete="off" disabled/>
+      </el-form-item>
+      <el-form-item label="重置密码" :label-width="formLabelWidth">
+        <el-input v-model="editForm.password" placeholder="请输入新的密码"></el-input>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取消</el-button>
+        <el-button type="primary" @click="doReset">
+          确定
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 <script setup>
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { useUserStore } from "@/stores/user";
 
-const username = "李承翰";
+// 定义store
+const userStore = useUserStore();
+
+const username = userStore.userInfo.username;
+const role = userStore.userInfo.is_admin ? "管理员" : "教师";
+
+const dialogFormVisible = ref(false);
+
+const editForm = ref({
+  id: userStore.userInfo.id,
+  username: username,
+  password: "",
+})
 
 // // 用户名下拉菜单选择事件
 const router = useRouter();
 const handleCommand = (command) => {
-	if (command == 'loginout') {
-		localStorage.removeItem('ms_username');
-		router.push('/login');
-	} else if (command == 'user') {
-		router.push('/user');
-	}
+  if (command == "loginout") {
+    userStore.clearUserInfo();
+    router.push("teacher/login");
+  } else if (command == "reset") {
+    dialogFormVisible.value = true;
+  }
 };
-</script>
-<style scoped lang="scss">
 
+// 修改密码
+const doReset = async() => {
+  await userStore.resetPassword(editForm.value)
+  if (Object.keys(userStore.userInfo).length === 0) {
+  router.replace('/teacher/login')
+  ElMessage.success('修改成功,请重新登录');
+}
+}
+</script>
+
+
+<style scoped lang="scss">
 i {
   font-size: 30px;
   vertical-align: middle;
   margin-right: 10px;
   font-weight: 100;
+}
+
+#xiala {
+  font-size: 20px;
+  vertical-align: middle;
+  margin-right: 10px;
+  font-weight: 100;
+}
+
+.logo {
+  margin-left: 20px;
 }
 .header {
   position: relative;
@@ -66,15 +112,6 @@ i {
   font-size: 22px;
   color: #fff;
   background-color: #242f42;
-}
-.collapse-btn {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  float: left;
-  padding: 0 21px;
-  cursor: pointer;
 }
 .header .logo {
   float: left;

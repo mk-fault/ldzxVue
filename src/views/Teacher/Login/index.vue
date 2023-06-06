@@ -1,6 +1,6 @@
 <script setup>
 import { defineComponent, reactive, ref } from "vue";
-import PicCode from "@/components/PicCode/PicCode.vue";
+import PicCode from "@/components/PicCode/PicCode2.vue";
 import { useUserStore } from "@/stores/user";
 import { ElMessage } from "element-plus";
 import 'element-plus/theme-chalk/el-message.css' 
@@ -50,6 +50,7 @@ function validateCode(inputCode, generatedCode) {
 // 定义
 const userStore = useUserStore()
 const router = useRouter();
+const codeRef = ref(null)
 
 // 登录逻辑
 const doLogin = () => {
@@ -59,14 +60,26 @@ const doLogin = () => {
       // 验证验证码是否正确
       if (validateCode(code,Code.value)) {
         await userStore.getUserInfo({ username, password })
-        ElMessage.success('登录成功')
-        router.replace('/teacher')
+        if (Object.keys(userStore.userInfo).length > 0) {
+          ElMessage.success('登录成功')
+          router.replace('/teacher')
+        } else {
+          ElMessage.error('用户名或密码错误')
+          codeRef.value.OnRefresh()
+        }
+      } else {
+        ElMessage.error('验证码错误')
+        codeRef.value.OnRefresh()
       }
-
     } else {
       ElMessage.error('请将信息填写完整')
     }
   })
+}
+
+// 如果已经登录，跳转到首页
+if (Object.keys(userStore.userInfo).length > 0) {
+  router.replace('/teacher')
 }
 </script>
 
@@ -91,7 +104,7 @@ const doLogin = () => {
                 <el-input v-model="form.username" />
               </el-form-item>
               <el-form-item prop="password" label="密码">
-                <el-input v-model="form.password" />
+                <el-input v-model="form.password"  type='password'/>
               </el-form-item>
               <el-row>
                 <el-col :span="12">
@@ -100,7 +113,7 @@ const doLogin = () => {
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <PicCode :width="150" :height="36" v-model:Code="Code" class="verifyCode"/>
+                  <PicCode :width="150" :height="36" v-model:Code="Code" class="verifyCode" ref="codeRef"/>
                 </el-col>
               </el-row>
   

@@ -10,7 +10,7 @@
 
 <script lang='ts'>
 import GVerify from "./piccode.js";
-import { defineComponent, reactive, ref, onMounted } from "vue";
+import { defineComponent, reactive, ref, onMounted, defineExpose } from "vue";
 
 export default defineComponent({
   props: {
