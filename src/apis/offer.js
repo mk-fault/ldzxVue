@@ -30,3 +30,13 @@ export const previewOfferAPI = (id = '') => {
     });
 }
 
+// 修改通知书API
+export const updateOfferAPI = (data) => {
+    const {id} = data
+    return httpInstance({
+        url: `offer/offers/${id}/`,
+        method: "patch",
+        data
+    })
+}
+

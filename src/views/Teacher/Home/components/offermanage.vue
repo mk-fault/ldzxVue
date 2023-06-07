@@ -80,6 +80,44 @@ const handlePreview = async (row) => {
     loading.value[row.id] = false;
   }
 };
+
+/*------------ 通知书修改 --------------------*/
+const editVisible = ref(false);
+const imageUrl = ref("")
+const handleEdit = (row) => {
+  editForm.value = row;
+  imageUrl.value = row.background_pic;
+  editVisible.value = true;
+};
+const upload = ref(null)
+const beforeUpload = (file) => {
+  if (file.type !== 'image/jpeg') {
+    ElMessage.error('上传图片只能是 JPG 格式!')
+    return false
+  } 
+  return true
+}
+const onExceed = (files) => {
+    upload.value.clearFiles()
+    const file = files[0]
+    upload.value.handleStart(file)
+    console.log(file)
+}
+const uploadImg = async(item) => {
+    console.log(item.file)
+}
+const doEdit = async() => {
+    const { id, text } = editForm.value;
+    const res = await offerStore.updateOffer({id, text})
+    if(res.flag) {
+        ElMessage.success("修改成功")
+        editVisible.value = false
+        await offerStore.getOfferInfo(query.value);
+    } else {
+        ElMessage.error("修改失败")
+        ElMessageBox.alert(res.eMsg,"提示")
+    }
+}
 </script>
 
 <template>
@@ -178,11 +216,48 @@ const handlePreview = async (row) => {
       >
         <img :src="imgUrl" alt="" class="offerImg" />
       </el-dialog>
+
+      <!-- 编辑弹出框 -->
+      <el-dialog title="编辑" v-model="editVisible" width="35%">
+        <el-form label-width="90px">
+          <el-form-item label="通知书编号">
+            <el-input v-model="editForm.id" disabled></el-input>
+          </el-form-item>
+          <el-form-item label="背景图片">
+              <el-upload
+                action="#"
+                :limit="1"
+                :on-exceed="onExceed"
+                :show-file-list="true"
+                :http-request="uploadImg"
+                :before-upload="beforeUpload"
+                ref="upload"
+              >
+                <img v-if="imageUrl" :src="imageUrl" class="editImg"/>
+                <el-button type="info">上传图片</el-button>
+              </el-upload>
+          </el-form-item>
+          <el-form-item label="通知书内容">
+            <el-input v-model="editForm.text" type="textarea"></el-input>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="editVisible = false">取 消</el-button>
+            <el-button type="primary" @click="doEdit">确 定</el-button>
+          </span>
+        </template>
+      </el-dialog>
     </div>
   </div>
 </template>
 
 <style scoped>
+.editImg {
+    width: 100px;
+    height: 100px;
+    margin-right: 50px;
+}
 .offerImg {
   width: 600px;
   height: 840px;
