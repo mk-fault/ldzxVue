@@ -5,6 +5,7 @@ import {
   updateStudentAPI,
   deleteStudentAPI,
   addStudentAPI,
+  uploadExcelAPI
 } from "@/apis/student";
 
 import { ElMessage } from "element-plus";
@@ -68,6 +69,21 @@ export const useStudentStore = defineStore("student", () => {
     });
     return { flag, eMsg };
   }
+  // 批量新增学生
+  const uploadExcel = async (formData) => {
+    let flag = false;
+    let eMsg = null;
+    await uploadExcelAPI(formData).then((res, e) => {
+        console.log(res)
+      if (res.status === 201) {
+        flag = true;
+      } else {
+        eMsg = res.data;
+        flag = false;
+      }
+    });
+    return { flag, eMsg };
+  }
 
   // return
   return {
@@ -75,6 +91,7 @@ export const useStudentStore = defineStore("student", () => {
     getStudentInfo,
     updateStudent,
     deleteStudent,
-    addStudent
+    addStudent,
+    uploadExcel
   };
 });

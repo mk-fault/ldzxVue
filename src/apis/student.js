@@ -47,3 +47,12 @@ export const addStudentAPI = (data) => {
         data
     })
 }
+
+// 批量新增学生API
+export const uploadExcelAPI = (formData) => {
+    return httpInstance({
+        url: 'student/multi_create/',
+        method: 'POST',
+        data: formData
+    })
+}
