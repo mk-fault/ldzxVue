@@ -31,9 +31,19 @@ export const updateStudentAPI = ({
   });
 };
 
+// 删除学生API
 export const deleteStudentAPI = (id) => {
   return httpInstance({
     url: `student/students/${id}/`,
     method: "DELETE",
   });
 };
+
+// 新增一个学生API
+export const addStudentAPI = (data) => {
+    return httpInstance({
+        url: 'student/students/',
+        method: 'POST',
+        data
+    })
+}

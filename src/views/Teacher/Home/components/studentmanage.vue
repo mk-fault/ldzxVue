@@ -1,9 +1,10 @@
 <script setup>
 import { ref, reactive } from "vue";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { useStudentStore } from "@/stores/student";
 import 'element-plus/theme-chalk/el-message.css' 
 
+/*------------ 字段定义 --------------------*/
 // 筛选字段
 const filterField = ref({
   id: "身份证号",
@@ -29,6 +30,7 @@ const orderField = ref({
   create_time: "创建时间",
   update_time: "更新时间",
 });
+
 //排序方法
 const orderMethod = ref({
   "-": "降序",
@@ -40,7 +42,35 @@ const orderby = computed(() => {
     return order2.value + order1.value;
 })
 
+// 转换错误信息格式
+function convertErrorMsgToStringWithField(eMsg, Field) {
+  let errorMsg = '';
 
+  for (let key in eMsg) {
+    if (eMsg.hasOwnProperty(key)) {
+      const messages = eMsg[key];
+      const fieldLabel = Field[key] || key; // 获取字段的说明，若不存在说明则使用字段名作为默认值
+
+      for (let i = 0; i < messages.length; i++) {
+        errorMsg += fieldLabel + ': ' + messages[i] + '<br>';
+      }
+    }
+  }
+  return errorMsg.trim();
+}
+
+// 字段说明
+const Field = {
+  id: "身份证号",
+  sex: "性别",
+  admission_date: "入学年份",
+  student_id: "准考证号",
+  class_num: "班级",
+  name: "姓名"
+};
+
+
+/*------------ 编辑学生 --------------------*/
 // 编辑学生信息
 const editVisible = ref(false);
 const handleEdit = (row) => {
@@ -56,31 +86,7 @@ const editForm = ref({
   sex: "",
   admission_date: "",
 });
-// 转换错误信息格式
-function convertErrorMsgToStringWithField(eMsg, Field) {
-  let errorMsg = '';
 
-  for (let key in eMsg) {
-    if (eMsg.hasOwnProperty(key)) {
-      const messages = eMsg[key];
-      const fieldLabel = Field[key] || key; // 获取字段的说明，若不存在说明则使用字段名作为默认值
-
-      for (let i = 0; i < messages.length; i++) {
-        errorMsg += fieldLabel + ': ' + messages[i] + '\n';
-      }
-    }
-  }
-  return errorMsg.trim();
-}
-// 字段说明
-const Field = {
-  id: "身份证号",
-  sex: "性别",
-  admission_date: "入学年份",
-  student_id: "准考证号",
-  class_num: "班级",
-  name: "姓名"
-};
 // 修改学生信息
 const doEdit = () => {
     ElMessageBox.confirm("确认修改学生信息？", "提示", {
@@ -94,8 +100,11 @@ const doEdit = () => {
             editVisible.value = false;
         } else {
             const errorMsg = convertErrorMsgToStringWithField(res.eMsg,Field)
-            ElMessageBox.alert(errorMsg, '提示')
+            ElMessageBox.alert(errorMsg, '提示', {
+                dangerouslyUseHTMLString: true
+            }) 
             ElMessage.error("修改失败");
+            console.log(errorMsg)
             await studentStore.getStudentInfo(transformQuery(query.value))
         }
         
@@ -107,6 +116,8 @@ const doEdit = () => {
     })
 }
 
+
+/*------------ 删除学生 --------------------*/
 // 删除学生信息
 const handleDelete = (row) => {
     ElMessageBox.confirm("确认删除学生信息？", "提示", {
@@ -129,7 +140,9 @@ const handleDelete = (row) => {
     })
 }
 
-// 新增学生
+
+/*------------ 新增学生 --------------------*/
+/* 新增一个学生 */
 const addVisible = ref(false)
 const handleAdd = () => {
     addVisible.value = true;
@@ -142,7 +155,36 @@ const addForm = ref({
   sex: '',
   admission_date: '',
 });
+const doAdd = () => {
+    ElMessageBox.confirm("确认新增学生？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+    }).then(async() => {
+        const res = await studentStore.addStudent(addForm.value)
+        if (res.flag) {
+            ElMessage.success("新增成功");
+            addVisible.value = false;
+            // 清空表单
+            addForm.value = {}
+            await studentStore.getStudentInfo(transformQuery(query.value))
+        } else {
+            const errorMsg = convertErrorMsgToStringWithField(res.eMsg,Field)
+            ElMessageBox.alert(errorMsg, '提示' , {
+                dangerouslyUseHTMLString: true
+            })
+            ElMessage.error("新增失败");   
+        }  
+    }).catch(() => {
+        ElMessage({
+            type: "info",
+            message: "已取消新增",
+        });
+    })
+}
 
+
+/*------------ PARAMA定义 --------------------*/
 // 查询参数
 const query = ref({
   type: "",
@@ -163,6 +205,7 @@ function transformQuery(query) {
   };
 }
 
+/*------------ 信息获取 --------------------*/
 // 获取学生列表
 const studentStore = useStudentStore()
 
@@ -373,13 +416,12 @@ const handlePageChange = async(cp) => {
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="addVisible = false">取 消</el-button>
-          <el-button type="primary" @click="addVisible = false"
+          <el-button type="primary" @click="doAdd"
             >确 定</el-button
           >
         </span>
       </template>
     </el-dialog>
-
 
   </div>
 </template>

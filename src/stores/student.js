@@ -1,10 +1,10 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { loginAPI, resetAPI } from "@/apis/teacher";
 import {
   getStudentAPI,
   updateStudentAPI,
   deleteStudentAPI,
+  addStudentAPI,
 } from "@/apis/student";
 
 import { ElMessage } from "element-plus";
@@ -54,12 +54,27 @@ export const useStudentStore = defineStore("student", () => {
     console.log(flag)
     return flag;
   };
+  // 新增一个学生
+  const addStudent = async (data) => {
+    let flag = false;
+    let eMsg = null;
+    await addStudentAPI(data).then((res, e) => {
+      if (res.status === 201) {
+        flag = true;
+      } else {
+        eMsg = res.data;
+        flag = false;
+      }
+    });
+    return { flag, eMsg };
+  }
 
   // return
   return {
     studentInfo,
     getStudentInfo,
     updateStudent,
-    deleteStudent
+    deleteStudent,
+    addStudent
   };
 });
