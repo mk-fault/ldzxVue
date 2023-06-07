@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive } from "vue";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage} from "element-plus";
 import { useStudentStore } from "@/stores/student";
 import "element-plus/theme-chalk/el-message.css";
 
@@ -378,11 +378,12 @@ const handlePageChange = async (cp) => {
       <el-table
         :data="studentStore.studentInfo.results"
         border
+        height="726"
         class="table"
         ref="multipleTable"
         header-cell-class-name="table-header"
       >
-        <el-table-column prop="name" label="学生姓名"></el-table-column>
+        <el-table-column prop="name" label="学生姓名" width="100"></el-table-column>
         <el-table-column
           prop="id"
           label="身份证号"
@@ -418,7 +419,7 @@ const handlePageChange = async (cp) => {
           label="下载次数"
           width="100"
         ></el-table-column>
-        <el-table-column label="操作" width="220" align="center">
+        <el-table-column label="操作" width="200" align="center">
           <template #default="scope">
             <el-button type="primary" @click="handleEdit(scope.row)"
               >编辑</el-button
@@ -509,7 +510,7 @@ const handlePageChange = async (cp) => {
   float: left;
 }
 .container {
-  padding: 30px;
+  padding: 25px;
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 5px;
