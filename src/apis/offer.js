@@ -30,13 +30,23 @@ export const previewOfferAPI = (id = '') => {
     });
 }
 
-// 修改通知书API
-export const updateOfferAPI = (data) => {
+// 修改通知书（修改内容）API
+export const updateOfferContentAPI = (data) => {
     const {id} = data
     return httpInstance({
         url: `offer/offers/${id}/`,
         method: "patch",
         data
+    })
+}
+
+// 修改通知书（上传图片）API
+export const updateOfferImageAPI = (data) => {
+    const {id, formData} = data
+    return httpInstance({
+        url: `offer/offers/${id}/`,
+        method: "patch",
+        data: formData
     })
 }
 

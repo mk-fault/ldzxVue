@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { getOfferAPI, changeOfferStatusAPI, previewOfferAPI, updateOfferAPI } from "@/apis/offer";
+import { getOfferAPI, changeOfferStatusAPI, previewOfferAPI, updateOfferContentAPI, updateOfferImageAPI } from "@/apis/offer";
 
 export const useOfferStore = defineStore("offer", () => {
   // state
@@ -51,11 +51,26 @@ export const useOfferStore = defineStore("offer", () => {
     return {flag, eMsg, data}
   }
 
-  // 修改offer
-  const updateOffer = async (data) => {
+  // 修改offer内容
+  const updateOfferContent = async (data) => {
     let flag = false
     let eMsg = null
-    await updateOfferAPI(data).then((res, e) => {
+    await updateOfferContentAPI(data).then((res, e) => {
+        if (res.status === 200) {
+            flag = true
+        } else {
+            flag = false
+            eMsg = res.data
+        }
+    })
+    return {flag, eMsg}
+  }
+
+  // 修改offer背景图片
+  const updateOfferImage = async (data) => {
+    let flag = false
+    let eMsg = null
+    await updateOfferImageAPI(data).then((res, e) => {
         console.log(res)
         if (res.status === 200) {
             flag = true
@@ -72,6 +87,7 @@ export const useOfferStore = defineStore("offer", () => {
     getOfferInfo,
     changeOfferStatus,
     previewOffer,
-    updateOffer
+    updateOfferImage,
+    updateOfferContent
   };
 });

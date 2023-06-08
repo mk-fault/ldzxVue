@@ -1,6 +1,7 @@
 <script setup>
 import { useOfferStore } from "@/stores/offer";
 import { ElMessage } from "element-plus";
+import "element-plus/theme-chalk/el-message.css";
 import { ref, onMounted } from "vue";
 
 const offerStore = useOfferStore();
@@ -37,6 +38,7 @@ const editForm = ref({
   background_pic: "",
   is_using: false,
   text: "",
+  upload: false,
 });
 
 // 启用/禁用开关
@@ -83,41 +85,79 @@ const handlePreview = async (row) => {
 
 /*------------ 通知书修改 --------------------*/
 const editVisible = ref(false);
-const imageUrl = ref("")
+const imageUrl = ref("");
+// 打开修改弹窗
 const handleEdit = (row) => {
   editForm.value = row;
   imageUrl.value = row.background_pic;
   editVisible.value = true;
 };
-const upload = ref(null)
+// 上传图片
+const upload = ref(null);
+// 检查图片格式
 const beforeUpload = (file) => {
-  if (file.type !== 'image/jpeg') {
-    ElMessage.error('上传图片只能是 JPG 格式!')
-    return false
-  } 
-  return true
-}
+  editForm.value.upload = true; // 标记此次需要上传图片
+  if (file.type !== "image/jpeg") {
+    ElMessage.error("上传图片只能是 JPG 格式!");
+    return false;
+  }
+  return true;
+};
+// 限制上传一张图片，超出则替换
 const onExceed = (files) => {
-    upload.value.clearFiles()
-    const file = files[0]
-    upload.value.handleStart(file)
-    console.log(file)
-}
-const uploadImg = async(item) => {
-    console.log(item.file)
-}
-const doEdit = async() => {
-    const { id, text } = editForm.value;
-    const res = await offerStore.updateOffer({id, text})
-    if(res.flag) {
-        ElMessage.success("修改成功")
-        editVisible.value = false
-        await offerStore.getOfferInfo(query.value);
-    } else {
-        ElMessage.error("修改失败")
-        ElMessageBox.alert(res.eMsg,"提示")
-    }
-}
+  upload.value.clearFiles();
+  const file = files[0];
+  upload.value.handleStart(file);
+};
+// 上传图片逻辑
+const uploadImg = async (item) => {
+  let formData = new FormData();
+  formData.append("background_pic", item.file);
+  const res = await offerStore.updateOfferImage({
+    id: editForm.value.id,
+    formData,
+  });
+  if (res.flag) {
+    ElMessage.success("修改成功");
+    editVisible.value = false;
+    await offerStore.getOfferInfo(query.value);
+    tableData.value = offerStore.offerInfo.results;
+    editForm.value = {};
+  } else {
+    ElMessage.error("修改失败");
+    ElMessageBox.alert(res.eMsg, "提示");
+  }
+  upload.value.clearFiles();
+};
+// 修改通知书内容
+const doEdit = async () => {
+  const { id, text } = editForm.value;
+  const res = await offerStore.updateOfferContent({ id, text });
+  // 当没有上传图片时，直接修改内容
+  if (res.flag && !editForm.value.upload) {
+    ElMessage.success("修改成功");
+    editVisible.value = false;
+    await offerStore.getOfferInfo(query.value);
+    tableData.value = offerStore.offerInfo.results;
+    editForm.value = {};
+  } else if (!res.flag) {
+    ElMessage.error("通知书内容修改失败");
+    ElMessageBox.alert("通知书内容不能为空", "提示");
+    tableData.value = offerStore.offerInfo.results;
+  }
+};
+// 点击确定时触发上传图片逻辑
+const doUpload = () => {
+  upload.value.submit();
+};
+// 取消修改
+const doCancel = async () => {
+  editVisible.value = false;
+  editForm.value = {};
+  upload.value.clearFiles();
+  await offerStore.getOfferInfo(query.value);
+  tableData.value = offerStore.offerInfo.results;
+};
 </script>
 
 <template>
@@ -224,27 +264,37 @@ const doEdit = async() => {
             <el-input v-model="editForm.id" disabled></el-input>
           </el-form-item>
           <el-form-item label="背景图片">
-              <el-upload
-                action="#"
-                :limit="1"
-                :on-exceed="onExceed"
-                :show-file-list="true"
-                :http-request="uploadImg"
-                :before-upload="beforeUpload"
-                ref="upload"
-              >
-                <img v-if="imageUrl" :src="imageUrl" class="editImg"/>
-                <el-button type="info">上传图片</el-button>
-              </el-upload>
+            <el-upload
+              action="#"
+              :limit="1"
+              :on-exceed="onExceed"
+              :show-file-list="false"
+              :http-request="uploadImg"
+              :before-upload="beforeUpload"
+              ref="upload"
+              :auto-upload="false"
+            >
+              <img v-if="imageUrl" :src="imageUrl" class="editImg" />
+              <el-button type="info">上传图片</el-button>
+            </el-upload>
           </el-form-item>
           <el-form-item label="通知书内容">
             <el-input v-model="editForm.text" type="textarea"></el-input>
           </el-form-item>
+          <el-alert title="通知书内容格式" type="info" show-icon style="width:400px" description="可变参数:姓名、身份证号、考号、班级、入学时间、性别；当使用可变参数时，请用{}将参数包裹起来，如:{姓名}" :closable="false"/>
+          
         </el-form>
         <template #footer>
           <span class="dialog-footer">
-            <el-button @click="editVisible = false">取 消</el-button>
-            <el-button type="primary" @click="doEdit">确 定</el-button>
+            <el-button @click="doCancel">取 消</el-button>
+            <el-button
+              type="primary"
+              @click="
+                doUpload();
+                doEdit();
+              "
+              >确 定</el-button
+            >
           </span>
         </template>
       </el-dialog>
@@ -254,9 +304,9 @@ const doEdit = async() => {
 
 <style scoped>
 .editImg {
-    width: 100px;
-    height: 100px;
-    margin-right: 50px;
+  width: 100px;
+  height: 100px;
+  margin-right: 50px;
 }
 .offerImg {
   width: 600px;
