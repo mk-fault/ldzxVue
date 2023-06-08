@@ -225,7 +225,7 @@ const uploadExcel = async (item) => {
   const file = item.file;
   let formData = new FormData();
   formData.append("students", file);
-  console.log(formData)
+  console.log(formData.get("students"))
   const res = await studentStore.uploadExcel(formData);
   if (res.flag) {
     ElMessage.success("上传成功");

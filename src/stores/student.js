@@ -44,15 +44,12 @@ export const useStudentStore = defineStore("student", () => {
   const deleteStudent = async (id) => {
     let flag = false;
     await deleteStudentAPI(id).then((res, e) => {
-        console.log(res)
-        console.log(res.status)
       if (res.status === 204) {
         flag = true;
       } else {
         flag = false;
       }
     });
-    console.log(flag)
     return flag;
   };
   // 新增一个学生
@@ -74,7 +71,6 @@ export const useStudentStore = defineStore("student", () => {
     let flag = false;
     let eMsg = null;
     await uploadExcelAPI(formData).then((res, e) => {
-        console.log(res)
       if (res.status === 201) {
         flag = true;
       } else {

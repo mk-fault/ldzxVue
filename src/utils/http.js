@@ -20,6 +20,17 @@ httpInstance.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+
+    // 如果数据为formData类型，设置请求头类型
+    if (config.data instanceof FormData) {
+        console.log('是formData类型')
+        // 设置headers的Content-Type为multipart/form-data
+        config.headers["Content-Type"] = "multipart/form-data";
+        // 设置boundary，可以从FormData对象中获取
+        config.headers["Content-Type"] += `; boundary=${config.data._boundary}`;
+      } else {
+        console.log('不是formData类型')
+      }
     return config;
   },
   (e) => Promise.reject(e)

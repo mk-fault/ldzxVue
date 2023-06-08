@@ -50,3 +50,19 @@ export const updateOfferImageAPI = (data) => {
     })
 }
 
+// 删除通知书API
+export const deleteOfferAPI = (id) => {
+    return httpInstance({
+        url: `offer/offers/${id}/`,
+        method: "delete"
+    })
+}
+
+// 添加通知书API
+export const addOfferAPI = (formData) => {
+    return httpInstance({
+        url: "offer/offers/",
+        method: "post",
+        data: formData
+    })
+}

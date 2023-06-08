@@ -2,6 +2,7 @@
 import { useOfferStore } from "@/stores/offer";
 import { ElMessage } from "element-plus";
 import "element-plus/theme-chalk/el-message.css";
+import { add } from "lodash";
 import { ref, onMounted } from "vue";
 
 const offerStore = useOfferStore();
@@ -79,6 +80,10 @@ const handlePreview = async (row) => {
     const url = window.URL.createObjectURL(new Blob([res.data]));
     imgUrl.value = url;
     previewVisiable.value = true;
+    loading.value[row.id] = false;
+  } else {
+    ElMessage.error("预览失败");
+    ElMessageBox.alert(res.eMsg, "提示");
     loading.value[row.id] = false;
   }
 };
@@ -158,13 +163,96 @@ const doCancel = async () => {
   await offerStore.getOfferInfo(query.value);
   tableData.value = offerStore.offerInfo.results;
 };
+
+/*------------ 通知书删除 --------------------*/
+const handleDelete = async (row) => {
+  const flag = await offerStore.deleteOffer(row.id);
+  if (flag) {
+    ElMessage.success(`通知书${row.id}号删除成功`);
+  } else {
+    ElMessage.error("删除失败,请刷新后重试");
+  }
+  await offerStore.getOfferInfo(query.value);
+  tableData.value = offerStore.offerInfo.results;
+};
+
+/*------------ 通知书添加 --------------------*/
+const addVisible = ref(false);
+const addForm = ref({
+  text: "",
+  is_using: true,
+  upload:false
+});
+const handleAdd = () => {
+  addVisible.value = true;
+};
+const uploadadd = ref(null);
+// 检查图片格式
+const beforeUploadAdd = (file) => {
+  if (file.type !== "image/jpeg") {
+    ElMessage.error("上传图片只能是 JPG 格式!");
+    return false;
+  }
+  return true;
+};
+const onChangeAdd = (file, fileList) => {
+    if (fileList.length > 0) {
+      addForm.value.upload = true;
+    } else {
+      addForm.value.upload = false;
+    }
+};
+const onRemoveAdd = (file, fileList) => {
+  addForm.value.upload = false;
+};
+// 限制上传一张图片，超出则替换
+const onExceedAdd = (files) => {
+  uploadadd.value.clearFiles();
+  const file = files[0];
+  uploadadd.value.handleStart(file);
+};
+// 上传图片逻辑
+const uploadAdd = async (item) => {
+    console.log("触发上传")
+  addForm.value.is_using = true;
+  let formData = new FormData();
+  formData.append("background_pic", item.file);
+  formData.append("text", addForm.value.text);
+  formData.append("is_using", addForm.value.is_using);
+  const res = await offerStore.addOffer(formData);
+  console.log(res);
+  if (res.flag) {
+    ElMessage.success("通知书添加成功");
+    addVisible.value = false;
+    await offerStore.getOfferInfo(query.value);
+    tableData.value = offerStore.offerInfo.results;
+    addForm.value = {};
+    uploadadd.value.clearFiles();
+  } else {
+    ElMessage.error("请添加通知书内容");
+    uploadadd.value.clearFiles();
+  }
+};
+// 点击确认后执行添加
+const doAdd = () => {
+    console.log(addForm.value.upload)
+    if (addForm.value.upload) {
+        console.log("上传图片")
+        uploadadd.value.submit();
+    } else {
+        ElMessage.error("请添加图片")
+    }
+};
 </script>
 
 <template>
   <div>
     <div class="container">
       <!-- 顶部按钮区 -->
-      <el-button type="primary" style="float: right; margin-bottom: 8px"
+      <el-button
+        type="primary"
+        style="float: right; margin-bottom: 8px"
+        @click="handleAdd"
         >新增</el-button
       >
 
@@ -259,7 +347,7 @@ const doCancel = async () => {
 
       <!-- 编辑弹出框 -->
       <el-dialog title="编辑" v-model="editVisible" width="35%">
-        <el-form label-width="90px">
+        <el-form label-width="90px" label-position="left">
           <el-form-item label="通知书编号">
             <el-input v-model="editForm.id" disabled></el-input>
           </el-form-item>
@@ -268,21 +356,33 @@ const doCancel = async () => {
               action="#"
               :limit="1"
               :on-exceed="onExceed"
-              :show-file-list="false"
+              :show-file-list="true"
               :http-request="uploadImg"
               :before-upload="beforeUpload"
               ref="upload"
+              list-type="picture"
               :auto-upload="false"
+              accept="image/jpeg"
             >
               <img v-if="imageUrl" :src="imageUrl" class="editImg" />
               <el-button type="info">上传图片</el-button>
             </el-upload>
           </el-form-item>
           <el-form-item label="通知书内容">
-            <el-input v-model="editForm.text" type="textarea"></el-input>
+            <el-input
+              v-model="editForm.text"
+              type="textarea"
+              autosize
+            ></el-input>
           </el-form-item>
-          <el-alert title="通知书内容格式" type="info" show-icon style="width:400px" description="可变参数:姓名、身份证号、考号、班级、入学时间、性别；当使用可变参数时，请用{}将参数包裹起来，如:{姓名}" :closable="false"/>
-          
+          <el-alert
+            title="通知书内容格式"
+            type="info"
+            show-icon
+            style="width: 400px"
+            description="可变参数:姓名、身份证号、考号、班级、入学时间、性别；当使用可变参数时，请用{}将参数包裹起来，如:{姓名}"
+            :closable="false"
+          />
         </el-form>
         <template #footer>
           <span class="dialog-footer">
@@ -295,6 +395,51 @@ const doCancel = async () => {
               "
               >确 定</el-button
             >
+          </span>
+        </template>
+      </el-dialog>
+
+      <!-- 新增弹出框 -->
+      <el-dialog title="新增通知书" v-model="addVisible" width="35%">
+        <el-form label-width="90px" label-position="left">
+          <el-form-item label="背景图片">
+            <el-upload
+              action="#"
+              :limit="1"
+              :on-exceed="onExceedAdd"
+              :on-change="onChangeAdd"
+              :on-remove="onRemoveAdd"
+              :show-file-list="true"
+              list-type="picture"
+              :http-request="uploadAdd"
+              :before-upload="beforeUploadAdd"
+              ref="uploadadd"
+              accept="image/jpeg"
+              :auto-upload="false"
+            >
+              <el-button type="info">上传图片</el-button>
+            </el-upload>
+          </el-form-item>
+          <el-form-item label="通知书内容">
+            <el-input
+              v-model="addForm.text"
+              type="textarea"
+              autosize
+            ></el-input>
+          </el-form-item>
+          <el-alert
+            title="通知书内容格式"
+            type="info"
+            show-icon
+            style="width: 400px"
+            description="可变参数:姓名、身份证号、考号、班级、入学时间、性别；当使用可变参数时，请用{}将参数包裹起来，如:{姓名}"
+            :closable="false"
+          />
+        </el-form>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="addVisible = false">取 消</el-button>
+            <el-button type="primary" @click="doAdd">确 定</el-button>
           </span>
         </template>
       </el-dialog>
