@@ -195,6 +195,7 @@ const beforeUploadAdd = (file) => {
   }
   return true;
 };
+// 检查是否上传图片
 const onChangeAdd = (file, fileList) => {
     if (fileList.length > 0) {
       addForm.value.upload = true;
@@ -202,6 +203,7 @@ const onChangeAdd = (file, fileList) => {
       addForm.value.upload = false;
     }
 };
+// 移除图片时修改标记
 const onRemoveAdd = (file, fileList) => {
   addForm.value.upload = false;
 };
@@ -213,14 +215,12 @@ const onExceedAdd = (files) => {
 };
 // 上传图片逻辑
 const uploadAdd = async (item) => {
-    console.log("触发上传")
   addForm.value.is_using = true;
   let formData = new FormData();
   formData.append("background_pic", item.file);
   formData.append("text", addForm.value.text);
   formData.append("is_using", addForm.value.is_using);
   const res = await offerStore.addOffer(formData);
-  console.log(res);
   if (res.flag) {
     ElMessage.success("通知书添加成功");
     addVisible.value = false;
@@ -237,7 +237,6 @@ const uploadAdd = async (item) => {
 const doAdd = () => {
     console.log(addForm.value.upload)
     if (addForm.value.upload) {
-        console.log("上传图片")
         uploadadd.value.submit();
     } else {
         ElMessage.error("请添加图片")
