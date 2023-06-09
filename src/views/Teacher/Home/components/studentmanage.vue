@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive } from "vue";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { useStudentStore } from "@/stores/student";
 import "element-plus/theme-chalk/el-message.css";
 
@@ -22,7 +22,6 @@ const filterField = ref({
 // 排序字段
 const orderField = ref({
   id: "身份证号",
-  sex: "性别",
   admission_date: "入学年份",
   student_id: "准考证号",
   class_num: "班级",
@@ -179,6 +178,44 @@ const handleDelete = (row) => {
         ElMessage.error("删除失败,请刷新后重试");
       }
       await studentStore.getStudentInfo(transformQuery(query.value));
+    })
+    .catch(() => {
+      ElMessage({
+        type: "info",
+        message: "已取消删除",
+      });
+    });
+};
+// 批量删除
+const multiDelVisiable = ref(false);
+const multipleTable = ref(null);
+const multipleSelection = ref([]);
+const handleSelectionChange = (val) => {
+  multipleSelection.value = val;
+  if (multipleSelection.value.length > 0) {
+    multiDelVisiable.value = true;
+  } else {
+    multiDelVisiable.value = false;
+  }
+};
+const handleMultiDelete = async () => {
+  ElMessageBox.confirm("确认删除所选学生信息？", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      const deleteList = multipleSelection.value.map((item) => item.id);
+      const res = await studentStore.multiDeleteStudent(deleteList);
+      if (res.flag) {
+        ElMessage.success("删除成功");
+        multiDelVisiable.value = false;
+        await studentStore.getStudentInfo(transformQuery(query.value));
+      } else {
+        ElMessage.error("删除失败");
+        ElMessageBox.alert(res.eMsg, "提示");
+        await studentStore.getStudentInfo(transformQuery(query.value));
+      }
     })
     .catch(() => {
       ElMessage({
@@ -427,11 +464,13 @@ const handlePageChange = async (cp) => {
       <el-table
         :data="studentStore.studentInfo.results"
         border
-        height="726"
+        height="700"
         class="table"
         ref="multipleTable"
         header-cell-class-name="table-header"
+        @selection-change="handleSelectionChange"
       >
+        <el-table-column type="selection" width="55" align="center" />
         <el-table-column
           prop="name"
           label="学生姓名"
@@ -447,11 +486,11 @@ const handlePageChange = async (cp) => {
           label="准考证号"
           width="200"
         ></el-table-column>
-        <el-table-column prop="sex" label="性别" width="100"></el-table-column>
+        <el-table-column prop="sex" label="性别" width="50"></el-table-column>
         <el-table-column
           prop="class_num"
           label="班级"
-          width="100"
+          width="50"
         ></el-table-column>
         <el-table-column
           prop="admission_date"
@@ -470,7 +509,7 @@ const handlePageChange = async (cp) => {
         <el-table-column
           prop="access_count"
           label="下载次数"
-          width="100"
+          width="55"
         ></el-table-column>
         <el-table-column label="操作" width="200" align="center">
           <template #default="scope">
@@ -483,6 +522,13 @@ const handlePageChange = async (cp) => {
           </template>
         </el-table-column>
       </el-table>
+
+      <!-- 批量删除 -->
+      <div class="multidel">
+        <el-button v-show="multiDelVisiable" @click="handleMultiDelete">
+          <i class="iconfont icon-lajitong" style="color: red"></i>
+        </el-button>
+      </div>
 
       <!-- 分页 -->
       <div class="pagination">
@@ -558,7 +604,7 @@ const handlePageChange = async (cp) => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .ordersel {
   float: left;
 }
@@ -594,5 +640,19 @@ const handlePageChange = async (cp) => {
   margin: auto;
   width: 40px;
   height: 40px;
+}
+
+.pagination {
+  margin-top: 10px;
+  text-align: right;
+}
+
+.multidel {
+  margin-top: 5px;
+  width: 100%;
+  height: 32px;
+  .el-button {
+    width: 55px;
+  }
 }
 </style>

@@ -39,6 +39,17 @@ export const deleteStudentAPI = (id) => {
   });
 };
 
+// 批量删除学生API
+export const multiDeleteStudentAPI = (delete_list) => {
+    return httpInstance({
+        url: 'student/multi_delete/',
+        method: 'POST',
+        data: {
+            delete_list: delete_list
+        }
+    })
+}
+
 // 新增一个学生API
 export const addStudentAPI = (data) => {
     return httpInstance({
@@ -56,3 +67,4 @@ export const uploadExcelAPI = (formData) => {
         data: formData
     })
 }
+
