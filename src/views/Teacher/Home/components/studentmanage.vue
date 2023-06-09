@@ -652,6 +652,7 @@ const handlePageChange = async (cp) => {
   width: 100%;
   height: 32px;
   .el-button {
+    background-color: #f6faff;
     width: 55px;
   }
 }

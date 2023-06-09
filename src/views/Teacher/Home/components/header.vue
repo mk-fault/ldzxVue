@@ -49,6 +49,7 @@
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
+import { ElMessageBox } from "element-plus";
 
 // 定义store
 const userStore = useUserStore();
@@ -77,11 +78,14 @@ const handleCommand = (command) => {
 
 // 修改密码
 const doReset = async() => {
-  await userStore.resetPassword(editForm.value)
-  if (Object.keys(userStore.userInfo).length === 0) {
-  router.push('/teacher/login')
-  ElMessage.success('修改成功,请重新登录');
-}
+  const res = await userStore.resetPassword(editForm.value)
+  if (res.flag) {
+    router.push('/teacher/login')
+    ElMessage.success('修改成功,请重新登录');
+  } else {
+    ElMessage.error("修改失败")
+    ElMessageBox.alert(res.eMsg,"提示")
+  }
 }
 </script>
 
