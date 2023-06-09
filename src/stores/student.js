@@ -21,6 +21,16 @@ export const useStudentStore = defineStore("student", () => {
     await getStudentAPI(parama).then((res, e) => {
       if (res.status === 200) {
         studentInfo.value = res.data;
+        const results = studentInfo.value.results.map((item) => {
+            if (item.sex === '0') {
+              return { ...item, sex: "女" };
+            } else if (item.sex === '1') {
+              return { ...item, sex: "男" };
+            } else {
+              return item;
+            }
+          });
+        studentInfo.value.results = results;
       } else {
         studentInfo.value = {};
       }

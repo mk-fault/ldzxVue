@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive } from "vue";
-import { ElMessage} from "element-plus";
+import { ElMessage } from "element-plus";
 import { useStudentStore } from "@/stores/student";
 import "element-plus/theme-chalk/el-message.css";
 
@@ -69,6 +69,52 @@ const Field = {
   name: "姓名",
 };
 
+// 表单验证规则
+const formRules = ref({
+  name: [
+    {
+      required: true,
+      message: "学生姓名不能为空",
+      trigger: "blur",
+    },
+  ],
+  id: [
+    {
+      required: true,
+      message: "身份证号不能为空",
+      trigger: "blur",
+    },
+  ],
+  student_id: [
+    {
+      required: true,
+      message: "准考证号不能为空",
+      trigger: "blur",
+    },
+  ],
+  class_num: [
+    {
+      required: true,
+      message: "班级不能为空",
+      trigger: "blur",
+    },
+  ],
+  sex: [
+    {
+      required: true,
+      message: "性别不能为空",
+      trigger: "blur",
+    },
+  ],
+  admission_date: [
+    {
+      required: true,
+      message: "入学时间不能为空",
+      trigger: "blur",
+    },
+  ],
+});
+
 /*------------ 编辑学生 --------------------*/
 // 编辑学生信息
 const editVisible = ref(false);
@@ -98,6 +144,7 @@ const doEdit = () => {
       if (res.flag) {
         ElMessage.success("修改成功");
         editVisible.value = false;
+        await studentStore.getStudentInfo(transformQuery(query.value));
       } else {
         const errorMsg = convertErrorMsgToStringWithField(res.eMsg, Field);
         ElMessageBox.alert(errorMsg, "提示", {
@@ -142,6 +189,7 @@ const handleDelete = (row) => {
 };
 
 /*------------ 新增学生 --------------------*/
+
 /* 新增一个学生 */
 const addVisible = ref(false);
 const handleAdd = () => {
@@ -220,12 +268,12 @@ function mergeAndReplaceFields(data, Field) {
   return result;
 }
 // Excel上传
-const upload = ref(null)
+const upload = ref(null);
 const uploadExcel = async (item) => {
   const file = item.file;
   let formData = new FormData();
   formData.append("students", file);
-  console.log(formData.get("students"))
+  console.log(formData.get("students"));
   const res = await studentStore.uploadExcel(formData);
   if (res.flag) {
     ElMessage.success("上传成功");
@@ -384,7 +432,11 @@ const handlePageChange = async (cp) => {
         ref="multipleTable"
         header-cell-class-name="table-header"
       >
-        <el-table-column prop="name" label="学生姓名" width="100"></el-table-column>
+        <el-table-column
+          prop="name"
+          label="学生姓名"
+          width="100"
+        ></el-table-column>
         <el-table-column
           prop="id"
           label="身份证号"
@@ -446,23 +498,23 @@ const handlePageChange = async (cp) => {
 
     <!-- 编辑弹出框 -->
     <el-dialog title="编辑" v-model="editVisible" width="25%">
-      <el-form label-width="70px">
-        <el-form-item label="学生姓名">
+      <el-form label-width="90px" :model="editForm" :rules="formRules">
+        <el-form-item label="学生姓名" prop="name">
           <el-input v-model="editForm.name"></el-input>
         </el-form-item>
-        <el-form-item label="身份证号">
+        <el-form-item label="身份证号" prop="id">
           <el-input v-model="editForm.id" disabled></el-input>
         </el-form-item>
-        <el-form-item label="准考证号">
+        <el-form-item label="准考证号" prop="student_id">
           <el-input v-model="editForm.student_id"></el-input>
         </el-form-item>
-        <el-form-item label="性别">
+        <el-form-item label="性别" prop="sex">
           <el-input v-model="editForm.sex"></el-input>
         </el-form-item>
-        <el-form-item label="班级">
+        <el-form-item label="班级" prop="class_num">
           <el-input v-model="editForm.class_num"></el-input>
         </el-form-item>
-        <el-form-item label="入学时间">
+        <el-form-item label="入学时间" prop="admission_date">
           <el-input v-model="editForm.admission_date"></el-input>
         </el-form-item>
       </el-form>
@@ -476,23 +528,23 @@ const handlePageChange = async (cp) => {
 
     <!-- 新增弹出框 -->
     <el-dialog title="新增学生" v-model="addVisible" width="25%">
-      <el-form label-width="70px">
-        <el-form-item label="学生姓名">
+      <el-form label-width="90px" :rules="formRules" :model="addForm">
+        <el-form-item label="学生姓名" prop="name">
           <el-input v-model="addForm.name"></el-input>
         </el-form-item>
-        <el-form-item label="身份证号">
+        <el-form-item label="身份证号" prop="id">
           <el-input v-model="addForm.id"></el-input>
         </el-form-item>
-        <el-form-item label="准考证号">
+        <el-form-item label="准考证号" prop="student_id">
           <el-input v-model="addForm.student_id"></el-input>
         </el-form-item>
-        <el-form-item label="性别">
+        <el-form-item label="性别" prop="sex">
           <el-input v-model="addForm.sex"></el-input>
         </el-form-item>
-        <el-form-item label="班级">
+        <el-form-item label="班级" prop="class_num">
           <el-input v-model="addForm.class_num"></el-input>
         </el-form-item>
-        <el-form-item label="入学时间">
+        <el-form-item label="入学时间" prop="admission_date">
           <el-input v-model="addForm.admission_date"></el-input>
         </el-form-item>
       </el-form>
