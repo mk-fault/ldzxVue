@@ -62,7 +62,7 @@ const doLogin = () => {
         await userStore.getUserInfo({ username, password })
         if (Object.keys(userStore.userInfo).length > 0) {
           ElMessage.success('登录成功')
-          router.replace('/teacher')
+          router.replace('/teacher/studentmanage')
         } else {
           ElMessage.error('用户名或密码错误')
           codeRef.value.OnRefresh()
@@ -79,7 +79,7 @@ const doLogin = () => {
 
 // 如果已经登录，跳转到首页
 if (Object.keys(userStore.userInfo).length > 0) {
-  router.replace('/teacher')
+  router.replace('/teacher/studentmanage')
 }
 </script>
 

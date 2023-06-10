@@ -7,6 +7,7 @@ import { ref, onMounted } from "vue";
 
 const offerStore = useOfferStore();
 
+/*------------ 通知书数据渲染 --------------------*/
 // 加载通知书信息
 const tableData = ref([]);
 const loading = ref({});
@@ -42,7 +43,7 @@ const editForm = ref({
   upload: false,
 });
 
-// 启用/禁用开关
+/*------------ 通知书启用/禁用 --------------------*/
 const handleStatusChange = async (row) => {
   if (row.is_using) {
     editForm.value = row;
@@ -69,7 +70,7 @@ const handleStatusChange = async (row) => {
   });
 };
 
-// 通知书预览
+/*------------ 通知书预览 --------------------*/
 const imgUrl = ref("");
 const previewVisiable = ref(false);
 
@@ -166,14 +167,27 @@ const doCancel = async () => {
 
 /*------------ 通知书删除 --------------------*/
 const handleDelete = async (row) => {
-  const flag = await offerStore.deleteOffer(row.id);
-  if (flag) {
-    ElMessage.success(`通知书${row.id}号删除成功`);
-  } else {
-    ElMessage.error("删除失败,请刷新后重试");
-  }
-  await offerStore.getOfferInfo(query.value);
-  tableData.value = offerStore.offerInfo.results;
+  ElMessageBox.confirm("确认删除所选通知书？", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  })
+    .then(async () => {
+      const flag = await offerStore.deleteOffer(row.id);
+      if (flag) {
+        ElMessage.success(`通知书${row.id}号删除成功`);
+      } else {
+        ElMessage.error("删除失败,请刷新后重试");
+      }
+      await offerStore.getOfferInfo(query.value);
+      tableData.value = offerStore.offerInfo.results;
+    })
+    .catch(() => {
+      ElMessage({
+        type: "info",
+        message: "已取消删除",
+      });
+    });
 };
 
 /*------------ 通知书添加 --------------------*/
@@ -181,7 +195,7 @@ const addVisible = ref(false);
 const addForm = ref({
   text: "",
   is_using: true,
-  upload:false
+  upload: false,
 });
 const handleAdd = () => {
   addVisible.value = true;
@@ -197,11 +211,11 @@ const beforeUploadAdd = (file) => {
 };
 // 检查是否上传图片
 const onChangeAdd = (file, fileList) => {
-    if (fileList.length > 0) {
-      addForm.value.upload = true;
-    } else {
-      addForm.value.upload = false;
-    }
+  if (fileList.length > 0) {
+    addForm.value.upload = true;
+  } else {
+    addForm.value.upload = false;
+  }
 };
 // 移除图片时修改标记
 const onRemoveAdd = (file, fileList) => {
@@ -235,12 +249,12 @@ const uploadAdd = async (item) => {
 };
 // 点击确认后执行添加
 const doAdd = () => {
-    console.log(addForm.value.upload)
-    if (addForm.value.upload) {
-        uploadadd.value.submit();
-    } else {
-        ElMessage.error("请添加图片")
-    }
+  console.log(addForm.value.upload);
+  if (addForm.value.upload) {
+    uploadadd.value.submit();
+  } else {
+    ElMessage.error("请添加图片");
+  }
 };
 </script>
 
