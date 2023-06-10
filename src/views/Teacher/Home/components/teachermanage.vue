@@ -45,7 +45,7 @@ const handleDelete = async (row) => {
       const flag = await userStore.deleteTeacher(row.id);
       if (flag) {
         ElMessage.success("删除教师账号成功");
-        await userStore.getTeacherInfo()
+        await userStore.getTeacherInfo();
       } else {
         ElMessage.error("删除教师账号失败");
         ElMessageBox.alert("删除失败，请刷新后重试", "错误提示");
@@ -62,32 +62,35 @@ const handleDelete = async (row) => {
 /*------------ 新增教师账号 --------------------*/
 const addVisible = ref(false);
 const addForm = ref({
-    username: "",
-})
+  username: "",
+});
+const formRef = ref(null);
 const formRules = {
-    username: [
-        { required: true, message: "请输入教师姓名", trigger: "blur" },
-    ],
-}
+  username: [{ required: true, message: "请输入教师姓名", trigger: "blur" }],
+};
 const handleAdd = () => {
-    addVisible.value = true;
-}
+  addVisible.value = true;
+};
 const doCancel = () => {
-    addVisible.value = false;
-    addForm.value.username = "";
-}
-const doAdd = async() => {
-    const res = await userStore.addTeacher(addForm.value);
-    if (res.flag) {
+  addVisible.value = false;
+  addForm.value.username = "";
+};
+const doAdd = () => {
+  formRef.value.validate(async (valid) => {
+    if (valid) {
+      const res = await userStore.addTeacher(addForm.value);
+      if (res.flag) {
         ElMessage.success("新增教师账号成功");
         addVisible.value = false;
         addForm.value.username = "";
-        await userStore.getTeacherInfo()
-    } else {
+        await userStore.getTeacherInfo();
+      } else {
         ElMessage.error("新增教师账号失败");
         ElMessageBox.alert(res.eMsg, "错误提示");
+      }
     }
-}
+  });
+};
 </script>
 
 <template>
@@ -151,26 +154,30 @@ const doAdd = async() => {
   </div>
 
   <!-- 新增弹出框 -->
-  <el-dialog title="新增教师账号" v-model="addVisible" width="25%">
-      <el-form label-width="90px" :rules="formRules" :model="addForm">
-        <el-form-item label="教师姓名" prop="username">
-          <el-input v-model="addForm.username"></el-input>
-        </el-form-item>
-      </el-form>
-      <el-alert
-            title="添加教师账号时，会将密码设置为123456，请通知教师及时修改密码。"
-            type="info"
-            show-icon
-            style=""
-            :closable="false"
-          />
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="doCancel">取 消</el-button>
-          <el-button type="primary" @click="doAdd">确 定</el-button>
-        </span>
-      </template>
-    </el-dialog>
+  <el-dialog
+    title="新增教师账号"
+    v-model="addVisible"
+    width="25%"
+  >
+    <el-form label-width="90px" :rules="formRules" :model="addForm" ref="formRef">
+      <el-form-item label="教师姓名" prop="username">
+        <el-input v-model="addForm.username"></el-input>
+      </el-form-item>
+    </el-form>
+    <el-alert
+      title="添加教师账号时，会将密码设置为123456，请通知教师及时修改密码。"
+      type="info"
+      show-icon
+      style=""
+      :closable="false"
+    />
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="doCancel">取 消</el-button>
+        <el-button type="primary" @click="doAdd">确 定</el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <style scoped lang="scss">

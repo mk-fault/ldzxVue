@@ -7,7 +7,8 @@ import {
   updateOfferContentAPI,
   updateOfferImageAPI,
   deleteOfferAPI,
-  addOfferAPI
+  addOfferAPI,
+  downloadOfferAPI,
 } from "@/apis/offer";
 
 export const useOfferStore = defineStore("offer", () => {
@@ -107,7 +108,7 @@ export const useOfferStore = defineStore("offer", () => {
     return flag;
   };
 
-  //添加offer
+  // 添加offer
   const addOffer = async (data) => {
     let flag = false;
     let eMsg = null;
@@ -121,7 +122,43 @@ export const useOfferStore = defineStore("offer", () => {
       }
     });
     return { flag, eMsg };
-  }
+  };
+
+  // 下载offer
+  const downloadOffer = async (studentData) => {
+    let flag = false;
+    let eMsg = null;
+    let data = null;
+    await downloadOfferAPI(studentData)
+      .then((res) => {
+        console.log(res);
+        if (res.status === 200) {
+          flag = true;
+          return res.data;
+        } else if (res.status === 429) {
+          flag = false;
+          res.data.msg = "下载次数过多，请稍后重试";
+          return res.data;
+        } else {
+          flag = false;
+          const blob = res.data;
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(JSON.parse(reader.result));
+            reader.onerror = reject;
+            reader.readAsText(blob);
+          });
+        }
+      })
+      .then((rdata) => {
+        if (flag) {
+          data = rdata;
+        } else {
+          eMsg = rdata.msg;
+        }
+      });
+    return { flag, eMsg, data };
+  };
 
   return {
     offerInfo,
@@ -131,6 +168,7 @@ export const useOfferStore = defineStore("offer", () => {
     updateOfferImage,
     updateOfferContent,
     deleteOffer,
-    addOffer
+    addOffer,
+    downloadOffer,
   };
 });

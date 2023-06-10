@@ -33,7 +33,7 @@ onMounted(() => {
   //初始化验证码
   verifyCode = new GVerify({
     type: "blend",
-    height: 36,
+    height: 30,
     con: picyzm.value,
   });
 

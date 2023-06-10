@@ -1,94 +1,70 @@
 <script setup>
-import { defineComponent, reactive, ref } from "vue";
+import { useOfferStore } from "@/stores/offer";
 import PicCode from "@/components/PicCode/PicCode2.vue";
-import { useUserStore } from "@/stores/user";
 import { ElMessage } from "element-plus";
-import 'element-plus/theme-chalk/el-message.css' 
-import { useRouter } from "vue-router";
 
 // 当前正确验证码
-const Code = ref(1)
-
-// 表单数据
-const form = ref({
-  username: '',
-  password: '',
-  code:''
-})
-
-// 表单验证规则
-const rules = ref({
-  username: [
-    {
-      required: true,
-      message: '用户名不能为空',
-      trigger: 'blur'
-    }
-  ],
-  password: [
-    {
-      required: true,
-      message: '密码不能为空',
-      trigger: 'blur'
-    }
-  ],
-  code: [
-    {
-      required: true,
-      message: '验证码不能为空',
-      trigger: 'blur'
-    }
-  ]
-})
-const formRef = ref(null)
-
+const Code = ref(1);
+const codeRef = ref(null);
 // 验证验证码是否正确
 function validateCode(inputCode, generatedCode) {
   return inputCode.toLowerCase() === generatedCode.toLowerCase();
 }
 
-// 定义
-const userStore = useUserStore()
-const router = useRouter();
-const codeRef = ref(null)
+// 提交表单
+const formRef = ref(null);
+const form = ref({
+  id: "",
+  name: "",
+  student_id: "",
+});
+const rules = {
+  id: [{ required: true, message: "请输入身份证号", trigger: "blur" }],
+  student_id: [{ required: true, message: "请输入准考证号", trigger: "blur" }],
+  name: [{ required: true, message: "请输入学生姓名", trigger: "blur" }],
+  code: [{ required: true, message: "请输入验证码", trigger: "blur" }],
+};
 
-// 登录逻辑
-const doLogin = () => {
-  const { username, password, code } = form.value
-  formRef.value.validate(async(valid) => {
+// 提交表单
+const offerStore = useOfferStore();
+const doSearch = () => {
+  const { id, student_id, name, code } = form.value;
+  formRef.value.validate(async (valid) => {
     if (valid) {
       // 验证验证码是否正确
-      if (validateCode(code,Code.value)) {
-        await userStore.getUserInfo({ username, password })
-        if (Object.keys(userStore.userInfo).length > 0) {
-          ElMessage.success('登录成功')
-          router.replace('/teacher/studentmanage')
+      console.log(Code.value);
+      if (validateCode(code, Code.value)) {
+        const res = await offerStore.downloadOffer({ id, student_id, name });
+        if (res.flag) {
+          ElMessage.success("查询成功，即将开始下载");
+          const url = window.URL.createObjectURL(new Blob([res.data]));
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", "file.pdf");
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
         } else {
-          ElMessage.error('用户名或密码错误')
-          codeRef.value.OnRefresh()
+          ElMessage.error(res.eMsg);
+          codeRef.value.OnRefresh();
         }
       } else {
-        ElMessage.error('验证码错误')
-        codeRef.value.OnRefresh()
+        ElMessage.error("验证码错误");
+        codeRef.value.OnRefresh();
       }
     } else {
-      ElMessage.error('请将信息填写完整')
+      ElMessage.error("请将信息填写完整");
     }
-  })
-}
-
-// 如果已经登录，跳转到首页
-if (Object.keys(userStore.userInfo).length > 0) {
-  router.replace('/teacher/studentmanage')
-}
+  });
+};
 </script>
 
 <template>
   <div class="container">
-  <section class="login-section">
+    <section class="login-section">
       <div class="wrapper">
         <nav>
-          <span>教师登录</span>
+          <span>电子录取通知书查询</span>
         </nav>
         <div class="account-box">
           <div class="form">
@@ -96,15 +72,18 @@ if (Object.keys(userStore.userInfo).length > 0) {
               :model="form"
               :rules="rules"
               label-position="left"
-              label-width="80px"
+              label-width="100px"
               status-icon
               ref="formRef"
             >
-              <el-form-item prop="username" label="用户名">
-                <el-input v-model="form.username" />
+              <el-form-item prop="id" label="身份证号码">
+                <el-input v-model="form.id" />
               </el-form-item>
-              <el-form-item prop="password" label="密码">
-                <el-input v-model="form.password"  type='password'/>
+              <el-form-item prop="student_id" label="准考证号">
+                <el-input v-model="form.student_id" />
+              </el-form-item>
+              <el-form-item prop="name" label="学生姓名">
+                <el-input v-model="form.name" />
               </el-form-item>
               <el-row>
                 <el-col :span="12">
@@ -113,19 +92,25 @@ if (Object.keys(userStore.userInfo).length > 0) {
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <PicCode :width="150" :height="30" v-model:Code="Code" class="verifyCode" ref="codeRef"/>
+                  <PicCode
+                    :width="150"
+                    :height="30"
+                    v-model:Code="Code"
+                    class="verifyCode"
+                    ref="codeRef"
+                  />
                 </el-col>
               </el-row>
-  
-              <el-button size="large" class="subBtn" @click="doLogin">点击登录</el-button>
+
+              <el-button size="large" class="subBtn" @click="doSearch"
+                >查询</el-button
+              >
             </el-form>
           </div>
         </div>
       </div>
     </section>
   </div>
-<!-- {{ Code }}
-<PicCode :width="150" :height="30" v-model:Code="Code" /> -->
 </template>
 
 <style scoped lang="scss">
@@ -133,7 +118,7 @@ $dark_gray: #889aa4;
 $bg: #2d3a4b;
 
 .container {
-  height:100%;
+  height: 100%;
   width: 100%;
 }
 .login-section {
@@ -191,7 +176,7 @@ $bg: #2d3a4b;
     &-item {
       margin-bottom: 28px;
 
-      .el-input {
+      .input {
         position: relative;
         height: 36px;
 
@@ -289,7 +274,7 @@ $bg: #2d3a4b;
   }
 }
 
-.verifyCode{
+.verifyCode {
   width: 100%;
   height: 100%;
   margin-left: 52px;

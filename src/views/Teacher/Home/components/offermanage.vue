@@ -80,6 +80,7 @@ const handlePreview = async (row) => {
   if (res.flag) {
     const url = window.URL.createObjectURL(new Blob([res.data]));
     imgUrl.value = url;
+    // window.URL.revokeObjectURL(url)
     previewVisiable.value = true;
     loading.value[row.id] = false;
   } else {
@@ -354,6 +355,7 @@ const doAdd = () => {
         width="35%"
         align-center="true"
         center="true"
+        @closed="previewClose"
       >
         <img :src="imgUrl" alt="" class="offerImg" />
       </el-dialog>

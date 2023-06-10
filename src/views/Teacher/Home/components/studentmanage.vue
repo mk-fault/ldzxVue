@@ -228,6 +228,7 @@ const handleMultiDelete = async () => {
 /*------------ 新增学生 --------------------*/
 
 /* 新增一个学生 */
+const addFormRef = ref(null);
 const addVisible = ref(false);
 const handleAdd = () => {
   addVisible.value = true;
@@ -247,20 +248,24 @@ const doAdd = () => {
     type: "warning",
   })
     .then(async () => {
-      const res = await studentStore.addStudent(addForm.value);
-      if (res.flag) {
-        ElMessage.success("新增成功");
-        addVisible.value = false;
-        // 清空表单
-        addForm.value = {};
-        await studentStore.getStudentInfo(transformQuery(query.value));
-      } else {
-        const errorMsg = convertErrorMsgToStringWithField(res.eMsg, Field);
-        ElMessageBox.alert(errorMsg, "提示", {
-          dangerouslyUseHTMLString: true,
-        });
-        ElMessage.error("新增失败");
-      }
+      addFormRef.value.validate(async (valid) => {
+        if (valid) {
+          const res = await studentStore.addStudent(addForm.value);
+          if (res.flag) {
+            ElMessage.success("新增成功");
+            addVisible.value = false;
+            // 清空表单
+            addForm.value = {};
+            await studentStore.getStudentInfo(transformQuery(query.value));
+          } else {
+            const errorMsg = convertErrorMsgToStringWithField(res.eMsg, Field);
+            ElMessageBox.alert(errorMsg, "提示", {
+              dangerouslyUseHTMLString: true,
+            });
+            ElMessage.error("新增失败");
+          }
+        }
+      });
     })
     .catch(() => {
       ElMessage({
@@ -574,7 +579,12 @@ const handlePageChange = async (cp) => {
 
     <!-- 新增弹出框 -->
     <el-dialog title="新增学生" v-model="addVisible" width="25%">
-      <el-form label-width="90px" :rules="formRules" :model="addForm">
+      <el-form
+        label-width="90px"
+        :rules="formRules"
+        :model="addForm"
+        ref="addFormRef"
+      >
         <el-form-item label="学生姓名" prop="name">
           <el-input v-model="addForm.name"></el-input>
         </el-form-item>

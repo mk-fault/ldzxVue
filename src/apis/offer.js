@@ -66,3 +66,13 @@ export const addOfferAPI = (formData) => {
         data: formData
     })
 }
+
+// 下载通知书API
+export const downloadOfferAPI = (data) => {
+    return httpInstance({
+        url: "offer/download/",
+        method: "post",
+        responseType: "blob",
+        data
+    })
+}
