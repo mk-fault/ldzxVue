@@ -480,41 +480,55 @@ const handlePageChange = async (cp) => {
           prop="name"
           label="学生姓名"
           width="100"
+          align="center"
         ></el-table-column>
         <el-table-column
           prop="id"
           label="身份证号"
           width="200"
+          align="center"
         ></el-table-column>
         <el-table-column
           prop="student_id"
           label="准考证号"
           width="200"
+          align="center"
         ></el-table-column>
-        <el-table-column prop="sex" label="性别" width="50"></el-table-column>
+        <el-table-column
+          prop="sex"
+          label="性别"
+          width="70"
+          align="center"
+        ></el-table-column>
         <el-table-column
           prop="class_num"
           label="班级"
-          width="50"
+          width="70"
+          align="center"
         ></el-table-column>
         <el-table-column
           prop="admission_date"
           label="入学时间"
+          width="100"
+          align="center"
         ></el-table-column>
         <el-table-column
           prop="create_time"
           label="创建时间"
           width="230"
+          align="center"
         ></el-table-column>
         <el-table-column
           prop="update_time"
           label="更新时间"
           width="230"
+          align="center"
         ></el-table-column>
         <el-table-column
           prop="access_count"
           label="下载次数"
-          width="55"
+          width="100"
+          align="center"
         ></el-table-column>
         <el-table-column label="操作" width="200" align="center">
           <template #default="scope">

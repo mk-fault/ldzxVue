@@ -131,7 +131,11 @@ const doAdd = () => {
           />
         </template>
       </el-table-column>
-      <el-table-column prop="last_login" label="最后登录时间"></el-table-column>
+      <el-table-column
+        prop="last_login"
+        label="最后登录时间"
+        align="center"
+      ></el-table-column>
       <el-table-column label="操作" width="200" align="center">
         <template #default="scope">
           <el-button type="danger" @click="handleDelete(scope.row)"
@@ -154,12 +158,13 @@ const doAdd = () => {
   </div>
 
   <!-- 新增弹出框 -->
-  <el-dialog
-    title="新增教师账号"
-    v-model="addVisible"
-    width="25%"
-  >
-    <el-form label-width="90px" :rules="formRules" :model="addForm" ref="formRef">
+  <el-dialog title="新增教师账号" v-model="addVisible" width="25%">
+    <el-form
+      label-width="90px"
+      :rules="formRules"
+      :model="addForm"
+      ref="formRef"
+    >
       <el-form-item label="教师姓名" prop="username">
         <el-input v-model="addForm.username"></el-input>
       </el-form-item>
