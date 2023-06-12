@@ -25,10 +25,22 @@ const rules = {
   code: [{ required: true, message: "请输入验证码", trigger: "blur" }],
 };
 
+// 去掉首尾空格
+const trimmedObj = computed(() => {
+    const obj = form.value;
+    const trimmedObj = {};
+    for (const key in obj) {
+        if (Object.hasOwnProperty.call(obj, key)) {
+        trimmedObj[key] = obj[key].trim();
+        }
+    }
+    return trimmedObj;
+})
+
 // 提交表单
 const offerStore = useOfferStore();
 const doSearch = () => {
-  const { id, student_id, name, code } = form.value;
+  const { id, student_id, name, code } = trimmedObj.value;
   formRef.value.validate(async (valid) => {
     if (valid) {
       // 验证验证码是否正确

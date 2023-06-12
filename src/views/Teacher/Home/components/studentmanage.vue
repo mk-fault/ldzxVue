@@ -556,6 +556,7 @@ const handlePageChange = async (cp) => {
           layout="prev, pager, next"
           :current-page="query.page"
           :total="studentStore.studentInfo.count"
+          :page-size="13"
           @current-change="handlePageChange"
         ></el-pagination>
       </div>
