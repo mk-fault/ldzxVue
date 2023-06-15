@@ -12,7 +12,7 @@ const router = createRouter({
   routes: [
     {
         path: '/student',
-        component: Student
+        component: Student,
     },
     {
         path: '/',
@@ -20,7 +20,7 @@ const router = createRouter({
     },
     {
       path: '/teacher/login',
-      component: Login
+      component: Login,
     },
     {
       path: '/teacher',
@@ -28,7 +28,7 @@ const router = createRouter({
       children: [
         {
           path: 'studentmanage',
-          component: StudentManage
+          component: StudentManage,
         },
         {
           path: 'offermanage',
