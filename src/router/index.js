@@ -16,7 +16,7 @@ const router = createRouter({
     },
     {
         path: '/',
-        redirect: '/teacher/login'
+        redirect: '/student'
     },
     {
       path: '/teacher/login',
