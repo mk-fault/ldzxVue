@@ -38,8 +38,10 @@ const trimmedObj = computed(() => {
 })
 
 // 提交表单
+const downloading = ref(false)
 const offerStore = useOfferStore();
 const doSearch = () => {
+    downloading.value = true;
   const { id, student_id, name, code } = trimmedObj.value;
   formRef.value.validate(async (valid) => {
     if (valid) {
@@ -68,6 +70,7 @@ const doSearch = () => {
       ElMessage.error("请将信息填写完整");
     }
   });
+  downloading.value = false;
 };
 </script>
 
@@ -114,7 +117,7 @@ const doSearch = () => {
                 </el-col>
               </el-row>
 
-              <el-button size="large" class="subBtn" @click="doSearch"
+              <el-button size="large" class="subBtn" @click="doSearch" v-loading="downloading"
                 >查询</el-button
               >
             </el-form>

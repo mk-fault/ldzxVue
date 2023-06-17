@@ -1,4 +1,5 @@
 import httpInstance from "@/utils/http";
+import axios from "axios";
 
 // 获取学生信息API
 export const getStudentAPI = (params = {}) => {
@@ -68,3 +69,11 @@ export const uploadExcelAPI = (formData) => {
     })
 }
 
+// 获取批量添加学生模板API
+export const getStudentTemplateAPI = () => {
+    return axios({
+        url: 'http://127.0.0.1:80/media/student/template.xlsx',
+        method: 'GET',
+        responseType: 'blob'
+    })
+}

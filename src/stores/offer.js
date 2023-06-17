@@ -137,7 +137,7 @@ export const useOfferStore = defineStore("offer", () => {
           return res.data;
         } else if (res.status === 429) {
           flag = false;
-          res.data.msg = "下载次数过多，请稍后重试";
+          res.data.msg = "下载次数过多，请一分钟后再重试";
           return res.data;
         } else {
           flag = false;

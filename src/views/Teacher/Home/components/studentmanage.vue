@@ -337,6 +337,25 @@ const uploadExcel = async (item) => {
   upload.value.clearFiles();
 };
 
+// Excel下载
+const download = ref(false);
+const handledownload = async () => {
+  download.value = true;
+  const res = await studentStore.getStudentTemplate();
+  if (res.flag) {
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "template.xlsx");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } else {
+    ElMessage.error("查询失败");
+  }
+  download.value = false;
+};
+
 /*------------ PARAMA定义 --------------------*/
 // 查询参数
 const query = ref({
@@ -434,9 +453,17 @@ const handlePageChange = async (cp) => {
         </div>
 
         <!-- <el-button type="success" style="float: right">从Excel导入</el-button> -->
+        <el-button
+          type="info"
+          style="float: right; margin-left: 10px"
+          @click="handledownload"
+          v-loading="download"
+          >下载导入模板</el-button
+        >
         <el-button type="primary" style="float: right" @click="handleAdd"
           >新增</el-button
         >
+
         <div class="ordersel">
           <el-select
             v-model="order1"
