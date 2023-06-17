@@ -6,8 +6,7 @@ import {
   deleteStudentAPI,
   addStudentAPI,
   uploadExcelAPI,
-  multiDeleteStudentAPI,
-  getStudentTemplateAPI
+  multiDeleteStudentAPI
 } from "@/apis/student";
 
 import { ElMessage } from "element-plus";
@@ -112,22 +111,6 @@ export const useStudentStore = defineStore("student", () => {
     });
     return { flag, eMsg };
   };
-  // 获取学生信息模板
-    const getStudentTemplate = async () => {
-        let flag = false;
-        let eMsg = null;
-        let data = null;
-        await getStudentTemplateAPI().then((res, e) => {
-            if (res.status === 200) {
-                flag = true;
-                data = res.data;
-            } else {
-                eMsg = res.data;
-                flag = false;
-            }
-        });
-        return { flag, eMsg, data };
-    };
 
   // return
   return {
@@ -137,7 +120,6 @@ export const useStudentStore = defineStore("student", () => {
     deleteStudent,
     addStudent,
     uploadExcel,
-    multiDeleteStudent,
-    getStudentTemplate
+    multiDeleteStudent
   };
 });

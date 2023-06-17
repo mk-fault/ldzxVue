@@ -2,6 +2,7 @@
 import { useOfferStore } from "@/stores/offer";
 import PicCode from "@/components/PicCode/PicCode2.vue";
 import { ElMessage } from "element-plus";
+import FileSaver from 'file-saver'
 
 // 当前正确验证码
 const Code = ref(1);
@@ -27,21 +28,21 @@ const rules = {
 
 // 去掉首尾空格
 const trimmedObj = computed(() => {
-    const obj = form.value;
-    const trimmedObj = {};
-    for (const key in obj) {
-        if (Object.hasOwnProperty.call(obj, key)) {
-        trimmedObj[key] = obj[key].trim();
-        }
+  const obj = form.value;
+  const trimmedObj = {};
+  for (const key in obj) {
+    if (Object.hasOwnProperty.call(obj, key)) {
+      trimmedObj[key] = obj[key].trim();
     }
-    return trimmedObj;
-})
+  }
+  return trimmedObj;
+});
 
 // 提交表单
-const downloading = ref(false)
+const downloading = ref(false);
 const offerStore = useOfferStore();
 const doSearch = () => {
-    downloading.value = true;
+  downloading.value = true;
   const { id, student_id, name, code } = trimmedObj.value;
   formRef.value.validate(async (valid) => {
     if (valid) {
@@ -51,13 +52,15 @@ const doSearch = () => {
         const res = await offerStore.downloadOffer({ id, student_id, name });
         if (res.flag) {
           ElMessage.success("查询成功，即将开始下载");
-          const url = window.URL.createObjectURL(new Blob([res.data]));
-          const link = document.createElement("a");
-          link.href = url;
-          link.setAttribute("download", "file.pdf");
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+        //   const url = window.URL.createObjectURL(new Blob([res.data]));
+        //   const link = document.createElement("a");
+        //   link.href = url;
+        //   link.setAttribute("download", "录取通知书.pdf");
+        //   document.body.appendChild(link);
+        //   link.click();
+        //   document.body.removeChild(link);
+        let blob = new Blob([res.data], { type: 'application/pdf' })
+        FileSaver.saveAs(blob, '录取通知书.pdf')
         } else {
           ElMessage.error(res.eMsg);
           codeRef.value.OnRefresh();
@@ -67,65 +70,93 @@ const doSearch = () => {
         codeRef.value.OnRefresh();
       }
     } else {
-      ElMessage.error("请将信息填写完整");
+      ElMessage.error("请将考生信息填写完整");
     }
   });
   downloading.value = false;
 };
+
+//test
+// 检测设备类型
+const isMobile =
+  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  );
+
+// 根据设备类型显示不同的内容
+if (isMobile) {
+  // 移动端
+  console.log("This is a mobile device.");
+} else {
+  // PC端
+  console.log("This is a desktop device.");
+}
 </script>
 
 <template>
-  <div class="container">
-    <section class="login-section">
-      <div class="wrapper">
-        <nav>
-          <span>电子录取通知书查询</span>
-        </nav>
-        <div class="account-box">
-          <div class="form">
-            <el-form
-              :model="form"
-              :rules="rules"
-              label-position="left"
-              label-width="100px"
-              status-icon
-              ref="formRef"
-            >
-              <el-form-item prop="id" label="身份证号码">
-                <el-input v-model="form.id" />
-              </el-form-item>
-              <el-form-item prop="student_id" label="准考证号">
-                <el-input v-model="form.student_id" />
-              </el-form-item>
-              <el-form-item prop="name" label="学生姓名">
-                <el-input v-model="form.name" />
-              </el-form-item>
-              <el-row>
-                <el-col :span="12">
-                  <el-form-item prop="code" label="验证码">
-                    <el-input v-model="form.code" />
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <PicCode
-                    :width="150"
-                    :height="30"
-                    v-model:Code="Code"
-                    class="verifyCode"
-                    ref="codeRef"
-                  />
-                </el-col>
-              </el-row>
-
-              <el-button size="large" class="subBtn" @click="doSearch" v-loading="downloading"
-                >查询</el-button
+  <!-- <template v-if="!isMobile"> -->
+    <div class="container">
+      <section class="login-section">
+        <div class="wrapper">
+          <nav>
+            <span>电子录取通知书查询</span>
+          </nav>
+          <div class="account-box">
+            <div class="form">
+              <el-form
+                :model="form"
+                :rules="rules"
+                label-position="left"
+                label-width="100px"
+                status-icon
+                ref="formRef"
               >
-            </el-form>
+                <el-form-item prop="id" label="身份证号码">
+                  <el-input v-model="form.id" />
+                </el-form-item>
+                <el-form-item prop="student_id" label="准考证号">
+                  <el-input v-model="form.student_id" />
+                </el-form-item>
+                <el-form-item prop="name" label="学生姓名">
+                  <el-input v-model="form.name" />
+                </el-form-item>
+                <el-row>
+                  <el-col :span="12">
+                    <el-form-item prop="code" label="验证码">
+                      <el-input v-model="form.code" />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="12">
+                    <PicCode
+                      :width="150"
+                      :height="30"
+                      v-model:Code="Code"
+                      class="verifyCode"
+                      ref="codeRef"
+                    />
+                  </el-col>
+                </el-row>
+
+                <el-button
+                  size="large"
+                  class="subBtn"
+                  @click="doSearch"
+                  v-loading="downloading"
+                  >查询</el-button
+                >
+              </el-form>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
-  </div>
+      </section>
+    </div>
+  <!-- </template> -->
+
+  <!-- <template v-else>
+    <div>
+        <h1>这是手机端</h1>
+    </div>
+  </template> -->
 </template>
 
 <style scoped lang="scss">
@@ -144,7 +175,7 @@ $bg: #2d3a4b;
     width: 450px;
     background: #fff;
     position: absolute;
-    left: 35%;
+    left: 32%;
     top: 50%;
     transform: translate3d(100px, 0, 0);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
