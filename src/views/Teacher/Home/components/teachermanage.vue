@@ -128,6 +128,7 @@ const doAdd = () => {
             size="large"
             v-model="scope.row.is_active"
             @change="handleStatusChange(scope.row)"
+            :disabled="scope.row.username === 'admin'"
           />
         </template>
       </el-table-column>
@@ -138,7 +139,10 @@ const doAdd = () => {
       ></el-table-column>
       <el-table-column label="操作" width="200" align="center">
         <template #default="scope">
-          <el-button type="danger" @click="handleDelete(scope.row)"
+          <el-button
+            type="danger"
+            @click="handleDelete(scope.row)"
+            :disabled="scope.row.username === 'admin'"
             >删除</el-button
           >
         </template>
