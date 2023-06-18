@@ -72,7 +72,6 @@ export const downloadOfferAPI = (data) => {
     return httpInstance({
         url: "offer/download/",
         method: "post",
-        responseType: "blob",
         data
     })
 }

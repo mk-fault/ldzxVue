@@ -2,7 +2,6 @@
 import { useOfferStore } from "@/stores/offer";
 import PicCode from "@/components/PicCode/PicCode2.vue";
 import { ElMessage } from "element-plus";
-import FileSaver from 'file-saver'
 
 // 当前正确验证码
 const Code = ref(1);
@@ -52,6 +51,7 @@ const doSearch = () => {
         const res = await offerStore.downloadOffer({ id, student_id, name });
         if (res.flag) {
           ElMessage.success("查询成功，即将开始下载");
+          console.log(res.data);
         //   const url = window.URL.createObjectURL(new Blob([res.data]));
         //   const link = document.createElement("a");
         //   link.href = url;
@@ -59,8 +59,8 @@ const doSearch = () => {
         //   document.body.appendChild(link);
         //   link.click();
         //   document.body.removeChild(link);
-        let blob = new Blob([res.data], { type: 'application/pdf' })
-        FileSaver.saveAs(blob, '录取通知书.pdf')
+        // let blob = new Blob([res.data], { type: 'application/pdf' })
+        // FileSaver.saveAs(blob, '录取通知书.pdf')
         } else {
           ElMessage.error(res.eMsg);
           codeRef.value.OnRefresh();

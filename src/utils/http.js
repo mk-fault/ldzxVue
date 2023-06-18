@@ -6,7 +6,7 @@ import { useUserStore } from "@/stores/user";
 import router from "@/router";
 
 const httpInstance = axios.create({
-  baseURL: "http://127.0.0.1:80/api",
+  baseURL: "http://127.0.0.1:8000/api",
   timeout: 5000,
 });
 

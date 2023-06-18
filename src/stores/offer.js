@@ -129,34 +129,27 @@ export const useOfferStore = defineStore("offer", () => {
     let flag = false;
     let eMsg = null;
     let data = null;
-    await downloadOfferAPI(studentData)
-      .then((res) => {
-        console.log(res);
+    await downloadOfferAPI(studentData).then((res) => {
+        console.log(res)
         if (res.status === 200) {
           flag = true;
-          return res.data;
+          data = res.data;
         } else if (res.status === 429) {
           flag = false;
-          res.data.msg = "下载次数过多，请一分钟后再重试";
-          return res.data;
+          eMsg = "访问过于频繁，请一分钟后再重试";
         } else {
-          flag = false;
-          const blob = res.data;
-          return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(JSON.parse(reader.result));
-            reader.onerror = reject;
-            reader.readAsText(blob);
-          });
+            flag = false;
+            eMsg = res.data.msg;
+        //   flag = false;
+        //   const blob = res.data;
+        //   return new Promise((resolve, reject) => {
+        //     const reader = new FileReader();
+        //     reader.onloadend = () => resolve(JSON.parse(reader.result));
+        //     reader.onerror = reject;
+        //     reader.readAsText(blob);
+        //   });
         }
       })
-      .then((rdata) => {
-        if (flag) {
-          data = rdata;
-        } else {
-          eMsg = rdata.msg;
-        }
-      });
     return { flag, eMsg, data };
   };
 
