@@ -433,7 +433,7 @@ const handlePageChange = async (cp) => {
           </el-upload>
         </div>
 
-        <a href="http://127.0.0.1:80/media/student/template.xlsx" download>
+        <a href="http://127.0.0.1:8000/media/student/template.xlsx" download>
         <el-button
           type="info"
           style="float: right; margin-left: 10px"

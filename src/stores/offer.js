@@ -14,6 +14,7 @@ import {
 export const useOfferStore = defineStore("offer", () => {
   // state
   const offerInfo = ref({});
+  const offerPath = ref('');
 
   // action
   // 获取offer信息
@@ -155,6 +156,7 @@ export const useOfferStore = defineStore("offer", () => {
 
   return {
     offerInfo,
+    offerPath,
     getOfferInfo,
     changeOfferStatus,
     previewOffer,
