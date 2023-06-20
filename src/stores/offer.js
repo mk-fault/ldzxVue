@@ -14,7 +14,9 @@ import {
 export const useOfferStore = defineStore("offer", () => {
   // state
   const offerInfo = ref({});
-  const offerPath = ref('');
+
+  const offerStudentName = ref(''); // 用于下载offer时的学生姓名
+  const offerPath = ref('');        // 用于下载offer时的offer路径
 
   // action
   // 获取offer信息
@@ -165,5 +167,6 @@ export const useOfferStore = defineStore("offer", () => {
     deleteOffer,
     addOffer,
     downloadOffer,
+    offerStudentName
   };
 });

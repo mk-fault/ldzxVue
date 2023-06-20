@@ -1,8 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { loginAPI, resetAPI,getTeacherAPI, deactiveTeacherAPI, reactiveTeacherAPI, deleteTeacherAPI, addTeacherAPI } from "@/apis/teacher";
-import { ElMessage } from 'element-plus'
-import 'element-plus/theme-chalk/el-message.css'
 
 export const useUserStore = defineStore('user', () => {
   // state

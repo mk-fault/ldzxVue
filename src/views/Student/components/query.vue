@@ -1,8 +1,15 @@
 <script setup>
 import { useOfferStore } from "@/stores/offer";
 import PicCode from "@/components/PicCode/PicCode2.vue";
-import { ElMessage } from "element-plus";
+import PicCodeMobile from "@/components/PicCode/PicCodeMobile.vue";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { useRouter } from "vue-router";
+
+// 检测设备类型
+const isMobile =
+  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  );
 
 // 当前正确验证码
 const Code = ref(1);
@@ -38,13 +45,17 @@ const trimmedObj = computed(() => {
   return trimmedObj;
 });
 
+const dialogVisible = ref(false);
 
 // 提交表单
 const router = useRouter();
-const downloading = ref(false);
 const offerStore = useOfferStore();
+const studentInfo = ref({
+  name: "张三",
+});
 const doSearch = () => {
-  downloading.value = true;
+  //   dialogVisible.value = true;
+
   const { id, student_id, name, code } = trimmedObj.value;
   formRef.value.validate(async (valid) => {
     if (valid) {
@@ -54,140 +65,306 @@ const doSearch = () => {
         const res = await offerStore.downloadOffer({ id, student_id, name });
         if (res.flag) {
           ElMessage.success("成功查询到录取学生信息");
-          offerStore.offerPath = res.data.offer   
-          router.replace('offer');
+          studentInfo.value = res.data;
+          dialogVisible.value = true;
+          //   router.replace("offer");
 
-        //   const url = window.URL.createObjectURL(new Blob([res.data]));
-        //   const link = document.createElement("a");
-        //   link.href = url;
-        //   link.setAttribute("download", "录取通知书.pdf");
-        //   document.body.appendChild(link);
-        //   link.click();
-        //   document.body.removeChild(link);
-        // let blob = new Blob([res.data], { type: 'application/pdf' })
-        // FileSaver.saveAs(blob, '录取通知书.pdf')
+          //   const url = window.URL.createObjectURL(new Blob([res.data]));
+          //   const link = document.createElement("a");
+          //   link.href = url;
+          //   link.setAttribute("download", "录取通知书.pdf");
+          //   document.body.appendChild(link);
+          //   link.click();
+          //   document.body.removeChild(link);
+          // let blob = new Blob([res.data], { type: 'application/pdf' })
+          // FileSaver.saveAs(blob, '录取通知书.pdf')
         } else {
-          ElMessage.error(res.eMsg);
+          if (isMobile) {
+            ElMessageBox.alert(res.eMsg, "提示", {
+                type: "error",
+              confirmButtonText: "确定",
+            });
+          } else {
+            ElMessage.error(res.eMsg);
+          }
+          form.value.code = "";
           codeRef.value.OnRefresh();
         }
       } else {
         ElMessage.error("验证码错误");
+        form.value.code = "";
         codeRef.value.OnRefresh();
       }
     } else {
       ElMessage.error("请将考生信息填写完整");
+      form.value.code = "";
+      codeRef.value.OnRefresh();
     }
   });
-  downloading.value = false;
 };
 
-//test
-// 检测设备类型
-const isMobile =
-  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
-  );
-
-// 根据设备类型显示不同的内容
-if (isMobile) {
-  // 移动端
-  console.log("This is a mobile device.");
-} else {
-  // PC端
-  console.log("This is a desktop device.");
-}
+// 下载通知书
+// const ori_url = "http://127.0.0.1:8000";
+const ori_url = "http://192.168.31.113:8000";
+const offer_path = computed(() => {
+  return ori_url + studentInfo.value["offer"];
+});
+const download = () => {
+  window.open(offer_path.value);
+  dialogVisible.value = false;
+  form.value = {
+    id: "",
+    name: "",
+    student_id: "",
+  };
+};
 </script>
 
 <template>
-  <!-- <template v-if="!isMobile"> -->
-    <div class="container">
-      <section class="login-section">
-        <div class="wrapper">
-          <nav>
-            <span>电子录取通知书查询</span>
-          </nav>
-          <div class="account-box">
-            <div class="form">
-              <el-form
-                :model="form"
-                :rules="rules"
-                label-position="left"
-                label-width="100px"
-                status-icon
-                ref="formRef"
-              >
-                <el-form-item prop="id" label="身份证号码">
-                  <el-input v-model="form.id" />
-                </el-form-item>
-                <el-form-item prop="student_id" label="准考证号">
-                  <el-input v-model="form.student_id" />
-                </el-form-item>
-                <el-form-item prop="name" label="学生姓名">
-                  <el-input v-model="form.name" />
-                </el-form-item>
-                <el-row>
-                  <el-col :span="12">
-                    <el-form-item prop="code" label="验证码">
-                      <el-input v-model="form.code" />
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="12">
-                    <PicCode
-                      :width="150"
-                      :height="30"
-                      v-model:Code="Code"
-                      class="verifyCode"
-                      ref="codeRef"
-                    />
-                  </el-col>
-                </el-row>
-
-                <el-button
-                  size="large"
-                  class="subBtn"
-                  @click="doSearch"
-                  v-loading="downloading"
-                  >查询</el-button
+  <!-- PC端模板 -->
+  <template v-if="!isMobile">
+    <div id="pc">
+      <div class="container">
+        <section class="login-section">
+          <div class="wrapper">
+            <nav>
+              <span>电子录取通知书查询</span>
+            </nav>
+            <div class="account-box">
+              <div class="form">
+                <el-form
+                  :model="form"
+                  :rules="rules"
+                  label-position="left"
+                  label-width="100px"
+                  status-icon
+                  ref="formRef"
                 >
-              </el-form>
+                  <el-form-item prop="id" label="身份证号码">
+                    <el-input v-model="form.id" />
+                  </el-form-item>
+                  <el-form-item prop="student_id" label="准考证号">
+                    <el-input v-model="form.student_id" />
+                  </el-form-item>
+                  <el-form-item prop="name" label="学生姓名">
+                    <el-input v-model="form.name" />
+                  </el-form-item>
+                  <el-row>
+                    <el-col :span="12">
+                      <el-form-item prop="code" label="验证码">
+                        <el-input v-model="form.code" />
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                      <PicCode
+                        :width="150"
+                        :height="30"
+                        v-model:Code="Code"
+                        class="verifyCode"
+                        ref="codeRef"
+                      />
+                    </el-col>
+                  </el-row>
+
+                  <el-button
+                    size="large"
+                    class="subBtn"
+                    @click="doSearch"
+                    v-loading="downloading"
+                    >查询</el-button
+                  >
+                </el-form>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
-    </div>
-  <!-- </template> -->
+        </section>
+      </div>
 
-  <!-- <template v-else>
-    <div>
-        <h1>这是手机端</h1>
+      <el-dialog
+        v-model="dialogVisible"
+        width="25%"
+        :before-close="handleClose"
+        title="提示"
+      >
+        <h2>{{ studentInfo.name }}同学：</h2>
+        <h3>恭喜你被我校录取！</h3>
+        <h3>请点击按钮下载电子录取通知书!</h3>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="dialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="download"> 下载通知书 </el-button>
+          </span>
+        </template>
+      </el-dialog>
     </div>
-  </template> -->
+  </template>
+
+  <!-- 移动端模板 -->
+  <template v-else>
+    <div id="mobile">
+      <div class="container">
+        <section class="login-section">
+          <div class="wrapper">
+            <nav>
+              <span>电子录取通知书查询</span>
+            </nav>
+            <div class="account-box">
+              <div class="form">
+                <el-form
+                  :model="form"
+                  :rules="rules"
+                  label-position="top"
+                  status-icon
+                  ref="formRef"
+                >
+                  <el-form-item prop="id" label="身份证号码">
+                    <el-input v-model="form.id" />
+                  </el-form-item>
+                  <el-form-item prop="student_id" label="准考证号">
+                    <el-input v-model="form.student_id" />
+                  </el-form-item>
+                  <el-form-item prop="name" label="学生姓名">
+                    <el-input v-model="form.name" />
+                  </el-form-item>
+                  <el-form-item prop="code" label="验证码">
+                    <el-input v-model="form.code" />
+                  </el-form-item>
+                  <el-form-item style="margin-top: 10%;">
+                    <el-row :gutter="20">
+                      <el-col :span="12">
+                        <PicCodeMobile
+                          :width="150"
+                          :height="5"
+                          v-model:Code="Code"
+                          ref="codeRef"
+                        />
+                      </el-col>
+                      <el-col :span="12">
+                        <div style="height:60px;float: right; display: flex; justify-content: center; align-items: center;">
+                            <span>点击图片刷新验证码</span>
+                        </div>
+                        
+                      </el-col>
+                    </el-row>
+                  </el-form-item>
+
+                  <el-button size="large" class="subBtn" @click="doSearch"
+                    >查询</el-button
+                  >
+                </el-form>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <el-dialog
+        v-model="dialogVisible"
+        width="80%"
+        :show-close="false"
+      >
+        <h2>{{ studentInfo.name }}同学：</h2>
+        <h3>恭喜你被我校录取！</h3>
+        <h3>请点击按钮下载电子录取通知书!</h3>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="dialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="download"> 下载通知书 </el-button>
+          </span>
+        </template>
+      </el-dialog>
+    </div>
+  </template>
 </template>
 
 <style scoped lang="scss">
 $dark_gray: #889aa4;
 $bg: #2d3a4b;
 
-.container {
-  height: 100%;
-  width: 100%;
-}
-.login-section {
-  height: 488px;
-  position: relative;
+#pc {
+  .container {
+    height: 100%;
+    width: 100%;
+  }
+  .login-section {
+    height: 488px;
+    position: relative;
 
+    .wrapper {
+      width: 450px;
+      background: #fff;
+      position: absolute;
+      left: 32%;
+      top: 50%;
+      transform: translate3d(100px, 0, 0);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+
+      nav {
+        font-size: 25px;
+        height: 55px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #f5f5f5;
+        display: flex;
+        padding: 0 40px;
+        text-align: right;
+        align-items: center;
+
+        span {
+          flex: 1;
+          line-height: 1;
+          display: inline-block;
+          font-size: 18px;
+          position: relative;
+          text-align: center;
+        }
+      }
+    }
+  }
+
+  .account-box {
+    .form {
+      padding: 0 20px 20px 20px;
+
+      &-item {
+        margin-bottom: 28px;
+      }
+    }
+  }
+
+  .verifyCode {
+    width: 100%;
+    height: 100%;
+    margin-left: 52px;
+    border: 1px solid #cfcdcd;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .subBtn {
+    background: $dark_gray;
+    width: 100%;
+    color: #fff;
+  }
+}
+
+#mobile {
+  .container {
+    height: 100%;
+    width: 100%;
+  }
+  .login-section {
+    height: 100%;
+    position: relative;
+  }
   .wrapper {
-    width: 450px;
+    width: 90%;
+    height: 90%;
     background: #fff;
     position: absolute;
-    left: 32%;
-    top: 50%;
-    transform: translate3d(100px, 0, 0);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+    left: 5%;
+    right: 5%;
 
     nav {
       font-size: 25px;
-      height: 55px;
       margin-bottom: 20px;
       border-bottom: 1px solid #f5f5f5;
       display: flex;
@@ -199,143 +376,32 @@ $bg: #2d3a4b;
         flex: 1;
         line-height: 1;
         display: inline-block;
-        font-size: 18px;
+        font-size: 25px;
+        padding-top: 15%;
+        padding-bottom: 15%;
         position: relative;
         text-align: center;
       }
     }
   }
-}
-
-.account-box {
-  .toggle {
-    padding: 15px 40px;
-    text-align: right;
-
-    a {
-      color: $dark_gray;
-
-      i {
-        font-size: 14px;
-      }
+  .account-box {
+    .form {
+      padding: 0 20px 20px 20px;
     }
   }
-
-  .form {
-    padding: 0 20px 20px 20px;
-
-    &-item {
-      margin-bottom: 28px;
-
-      .input {
-        position: relative;
-        height: 36px;
-
-        > i {
-          width: 34px;
-          height: 34px;
-          background: #cfcdcd;
-          color: #fff;
-          position: absolute;
-          left: 1px;
-          top: 1px;
-          text-align: center;
-          line-height: 34px;
-          font-size: 18px;
-        }
-
-        input {
-          padding-left: 44px;
-          border: 1px solid #cfcdcd;
-          height: 36px;
-          line-height: 36px;
-          width: 100%;
-
-          &.error {
-            border-color: $dark_gray;
-          }
-
-          &.active,
-          &:focus {
-            border-color: $dark_gray;
-          }
-        }
-
-        .code {
-          position: absolute;
-          right: 1px;
-          top: 1px;
-          text-align: center;
-          line-height: 34px;
-          font-size: 14px;
-          background: #f5f5f5;
-          color: #666;
-          width: 90px;
-          height: 34px;
-          cursor: pointer;
-        }
-      }
-
-      > .error {
-        position: absolute;
-        font-size: 12px;
-        line-height: 28px;
-        color: $dark_gray;
-
-        i {
-          font-size: 14px;
-          margin-right: 2px;
-        }
-      }
-    }
-
-    .agree {
-      a {
-        color: #069;
-      }
-    }
-
-    .btn {
-      display: block;
-      width: 100%;
-      height: 40px;
-      color: #fff;
-      text-align: center;
-      line-height: 40px;
-      background: $dark_gray;
-
-      &.disabled {
-        background: #cfcdcd;
-      }
-    }
+  .verifyCode {
+    width: 100%;
+    height: 100%;
+    margin-top: 20%;
+    border: 1px solid #cfcdcd;
+    border-radius: 4px;
+    cursor: pointer;
   }
-
-  .action {
-    padding: 20px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    .url {
-      a {
-        color: #999;
-        margin-left: 10px;
-      }
-    }
+  .subBtn {
+    background: $dark_gray;
+    width: 100%;
+    color: #fff;
+    margin-top: 10%;
   }
-}
-
-.verifyCode {
-  width: 100%;
-  height: 100%;
-  margin-left: 52px;
-  border: 1px solid #cfcdcd;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.subBtn {
-  background: $dark_gray;
-  width: 100%;
-  color: #fff;
 }
 </style>

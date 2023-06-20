@@ -9,9 +9,6 @@ import {
   multiDeleteStudentAPI
 } from "@/apis/student";
 
-import { ElMessage } from "element-plus";
-import "element-plus/theme-chalk/el-message.css";
-
 export const useStudentStore = defineStore("student", () => {
   // state
   const studentInfo = ref({});

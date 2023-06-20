@@ -10,11 +10,22 @@ const url = computed(() => {
 </script>
 
 <template>
-  <h1>我是通知书界面</h1>
-  <h2>{{ url }}</h2>
-  <a :href="url" download>
-    <el-button>点我下载通知书</el-button>
-  </a>
+  <div class="container">
+    <h1>
+      {{ offerStore.offerStudentName }}同学，恭喜你被我校录取！请点击按钮下载电子录取通知书
+    </h1>
+    <a :href="url" download>
+      <el-button type="info">点我下载通知书</el-button>
+    </a>
+  </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+</style>
