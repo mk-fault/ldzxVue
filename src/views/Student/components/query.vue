@@ -104,8 +104,8 @@ const doSearch = () => {
 };
 
 // 下载通知书
-// const ori_url = "http://127.0.0.1:8000";
-const ori_url = "http://192.168.31.113:8000";
+const ori_url = "http://127.0.0.1:8000";
+// const ori_url = "http://192.168.58.6:8000";
 const offer_path = computed(() => {
   return ori_url + studentInfo.value["offer"];
 });

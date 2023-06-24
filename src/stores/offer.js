@@ -51,7 +51,6 @@ export const useOfferStore = defineStore("offer", () => {
     let data = null;
     let eMsg = null;
     await previewOfferAPI(id).then((res, e) => {
-      console.log(res);
       if (res.status === 200) {
         flag = true;
         data = res.data;
