@@ -4,10 +4,11 @@ import { useTypeStore } from "@/stores/type";
 import { ElMessage } from "element-plus";
 import "element-plus/theme-chalk/el-message.css";
 import { ref, onMounted } from "vue";
+import zhcn from "element-plus/lib/locale/lang/zh-cn";
 
 const offerStore = useOfferStore();
 const typeStore = useTypeStore();
-
+let local = zhcn;
 /*------------ 通知书数据渲染 --------------------*/
 
 // 查询参数
@@ -58,6 +59,10 @@ const editForm = ref({
   is_using: false,
   text: "",
   upload: false,
+  school: "",
+  type: "",
+  time: "",
+  web_path: "",
 });
 
 /*------------ 通知书启用/禁用 --------------------*/
@@ -155,8 +160,8 @@ const uploadImg = async (item) => {
 };
 // 修改通知书内容
 const doEdit = async () => {
-  const { id, text } = editForm.value;
-  const res = await offerStore.updateOfferContent({ id, text });
+  const { id, text, school, time, type, web_path } = editForm.value;
+  const res = await offerStore.updateOfferContent({ id, text, school, time, type, web_path });
   // 当没有上传图片时，直接修改内容
   if (res.flag && !editForm.value.upload) {
     ElMessage.success("修改成功");
@@ -166,7 +171,7 @@ const doEdit = async () => {
     editForm.value = {};
   } else if (!res.flag) {
     ElMessage.error("通知书内容修改失败");
-    ElMessageBox.alert("通知书内容不能为空", "提示");
+    ElMessageBox.alert("通知书修改失败", "提示");
     tableData.value = offerStore.offerInfo.results;
   }
 };
@@ -214,6 +219,10 @@ const addForm = ref({
   text: "",
   is_using: true,
   upload: false,
+  school: "",
+  type: "",
+  time: "",
+  web_path: "",
 });
 const handleAdd = () => {
   addVisible.value = true;
@@ -252,6 +261,11 @@ const uploadAdd = async (item) => {
   formData.append("background_pic", item.file);
   formData.append("text", addForm.value.text);
   formData.append("is_using", addForm.value.is_using);
+  formData.append("school", addForm.value.school);
+  formData.append("type", addForm.value.type);
+  formData.append("time", addForm.value.time);
+  formData.append("web_path", addForm.value.web_path);
+
   const res = await offerStore.addOffer(formData);
   if (res.flag) {
     ElMessage.success("通知书添加成功");
@@ -293,6 +307,7 @@ const doAdd = () => {
         placeholder="类型选择"
         v-model="offerType"
         @change="handleTypeChange"
+        style="border: 1px skyblue solid;"
       >
         <el-option
           v-for="item in typeStore.typeList"
@@ -305,7 +320,7 @@ const doAdd = () => {
       <!-- 表格 -->
       <el-table
         :data="tableData"
-        border="true"
+        :border="true"
         height="774"
         class="table"
         ref="multipleTable"
@@ -383,10 +398,16 @@ const doAdd = () => {
               v-loading="loading[scope.row.id]"
               >预览</el-button
             >
-            <el-button type="primary" @click="handleEdit(scope.row)" style="margin-top: 10px;"
+            <el-button
+              type="primary"
+              @click="handleEdit(scope.row)"
+              style="margin-top: 10px"
               >编辑</el-button
             >
-            <el-button type="danger" @click="handleDelete(scope.row)" style="margin-top: 10px;"
+            <el-button
+              type="danger"
+              @click="handleDelete(scope.row)"
+              style="margin-top: 10px"
               >删除</el-button
             >
           </template>
@@ -418,7 +439,7 @@ const doAdd = () => {
       </el-dialog>
 
       <!-- 编辑弹出框 -->
-      <el-dialog title="编辑" v-model="editVisible" width="35%">
+      <el-dialog title="编辑" v-model="editVisible" width="35%" @close="doCancel">
         <el-form label-width="90px" label-position="left">
           <el-form-item label="通知书编号">
             <el-input v-model="editForm.id" disabled></el-input>
@@ -440,11 +461,46 @@ const doAdd = () => {
               <el-button type="info">上传图片</el-button>
             </el-upload>
           </el-form-item>
+          <el-form-item label="通知书类型">
+            <el-select v-model="editForm.type" placeholder="选择类型">
+              <el-option
+                v-for="item in typeStore.typeList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.name"
+              ></el-option>
+            </el-select>
+          </el-form-item>
           <el-form-item label="通知书内容">
             <el-input
               v-model="editForm.text"
               type="textarea"
               autosize
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="落款学校">
+            <el-input
+              v-model="editForm.school"
+              placeholder="落款学校"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="发放日期">
+            <el-config-provider :locale="local">
+              <el-date-picker
+                v-model="editForm.time"
+                type="date"
+                :placeholder="editForm.time"
+                size="default"
+                format="YYYY 年 MM 月 DD 日"
+                value-format="YYYY-MM-DD"
+                :clearable="false"
+              />
+            </el-config-provider>
+          </el-form-item>
+          <el-form-item label="服务器地址">
+            <el-input
+              v-model="editForm.web_path"
+              placeholder="服务器地址"
             ></el-input>
           </el-form-item>
           <el-alert
@@ -492,11 +548,46 @@ const doAdd = () => {
               <el-button type="info">上传图片</el-button>
             </el-upload>
           </el-form-item>
+          <el-form-item label="通知书类型">
+            <el-select v-model="addForm.type" placeholder="选择类型">
+              <el-option
+                v-for="item in typeStore.typeList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.name"
+              ></el-option>
+            </el-select>
+          </el-form-item>
           <el-form-item label="通知书内容">
             <el-input
               v-model="addForm.text"
               type="textarea"
               autosize
+              placeholder="通知书内容"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="落款学校">
+            <el-input
+              v-model="addForm.school"
+              placeholder="落款学校"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="发放日期">
+            <el-config-provider :locale="local">
+              <el-date-picker
+                v-model="addForm.time"
+                type="date"
+                placeholder="发放日期"
+                size="default"
+                format="YYYY 年 MM 月 DD 日"
+                value-format="YYYY-MM-DD"
+              />
+            </el-config-provider>
+          </el-form-item>
+          <el-form-item label="服务器地址">
+            <el-input
+              v-model="addForm.web_path"
+              placeholder="服务器地址"
             ></el-input>
           </el-form-item>
           <el-alert
