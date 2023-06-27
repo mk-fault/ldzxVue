@@ -10,25 +10,12 @@ export const getStudentAPI = (params = {}) => {
 };
 
 // 修改学生信息API
-export const updateStudentAPI = ({
-  id,
-  student_id,
-  name,
-  sex,
-  class_num,
-  admission_date,
-}) => {
+export const updateStudentAPI = (data) => {
+    const { id } = data;
   return httpInstance({
     url: `student/students/${id}/`,
     method: "PUT",
-    data: {
-      id,
-      student_id,
-      name,
-      sex,
-      class_num,
-      admission_date,
-    },
+    data
   });
 };
 

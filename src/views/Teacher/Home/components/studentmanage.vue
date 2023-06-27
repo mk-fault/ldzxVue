@@ -2,11 +2,13 @@
 import { ref, reactive } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { useStudentStore } from "@/stores/student";
+import { useTypeStore } from "@/stores/type";
 import "element-plus/theme-chalk/el-message.css";
 
 /*------------ 字段定义 --------------------*/
 // 筛选字段
 const filterField = ref({
+  type: "学生类型",
   id: "身份证号",
   sex: "性别",
   admission_date: "入学年份",
@@ -66,10 +68,11 @@ const Field = {
   student_id: "准考证号",
   class_num: "班级",
   name: "姓名",
+  type: "学生类型",
 };
 
 // 表单验证规则
-const formRules = ref({
+const formRules = {
   name: [
     {
       required: true,
@@ -112,11 +115,19 @@ const formRules = ref({
       trigger: "blur",
     },
   ],
-});
+  type: [
+    {
+      required: true,
+      message: "学生类型不能为空",
+      trigger: "blur",
+    },
+  ],
+};
 
 /*------------ 编辑学生 --------------------*/
 // 编辑学生信息
 const editVisible = ref(false);
+const editFormRef = ref(null);
 const handleEdit = (row) => {
   editForm.value = row;
   editVisible.value = true;
@@ -129,6 +140,7 @@ const editForm = ref({
   class_num: "",
   sex: "",
   admission_date: "",
+  type: "",
 });
 
 // 修改学生信息
@@ -138,21 +150,25 @@ const doEdit = () => {
     cancelButtonText: "取消",
     type: "warning",
   })
-    .then(async () => {
-      const res = await studentStore.updateStudent(editForm.value);
-      if (res.flag) {
-        ElMessage.success("修改成功");
-        editVisible.value = false;
-        await studentStore.getStudentInfo(transformQuery(query.value));
-      } else {
-        const errorMsg = convertErrorMsgToStringWithField(res.eMsg, Field);
-        ElMessageBox.alert(errorMsg, "提示", {
-          dangerouslyUseHTMLString: true,
-        });
-        ElMessage.error("修改失败");
-        console.log(errorMsg);
-        await studentStore.getStudentInfo(transformQuery(query.value));
-      }
+    .then(() => {
+      editFormRef.value.validate(async (valid) => {
+        if (valid) {
+          const res = await studentStore.updateStudent(editForm.value);
+          if (res.flag) {
+            ElMessage.success("修改成功");
+            editVisible.value = false;
+            await studentStore.getStudentInfo(transformQuery(query.value));
+          } else {
+            const errorMsg = convertErrorMsgToStringWithField(res.eMsg, Field);
+            ElMessageBox.alert(errorMsg, "提示", {
+              dangerouslyUseHTMLString: true,
+            });
+            ElMessage.error("修改失败");
+            console.log(errorMsg);
+            await studentStore.getStudentInfo(transformQuery(query.value));
+          }
+        }
+      });
     })
     .catch(() => {
       ElMessage({
@@ -240,6 +256,7 @@ const addForm = ref({
   class_num: "",
   sex: "",
   admission_date: "",
+  type: "",
 });
 const doAdd = () => {
   ElMessageBox.confirm("确认新增学生？", "提示", {
@@ -247,7 +264,7 @@ const doAdd = () => {
     cancelButtonText: "取消",
     type: "warning",
   })
-    .then(async () => {
+    .then(() => {
       addFormRef.value.validate(async (valid) => {
         if (valid) {
           const res = await studentStore.addStudent(addForm.value);
@@ -361,9 +378,11 @@ function transformQuery(query) {
 /*------------ 信息获取 --------------------*/
 // 获取学生列表
 const studentStore = useStudentStore();
+const typeStore = useTypeStore();
 
 onMounted(() => {
   studentStore.getStudentInfo();
+  typeStore.getTypeList();
 });
 
 // 过滤和排序
@@ -398,7 +417,7 @@ const handlePageChange = async (cp) => {
       <div class="handle-box">
         <el-select
           v-model="query.type"
-          placeholder="筛选类型"
+          placeholder="筛选字段"
           class="handle-select mr10"
         >
           <el-option
@@ -434,14 +453,15 @@ const handlePageChange = async (cp) => {
         </div>
 
         <a href="http://127.0.0.1:8000/media/student/template.xlsx" download>
-        <el-button
-          type="info"
-          style="float: right; margin-left: 10px"
-          @click="handledownload"
-          v-loading="download"
-          >下载导入模板</el-button
-        > </a>
-        
+          <el-button
+            type="info"
+            style="float: right; margin-left: 10px"
+            @click="handledownload"
+            v-loading="download"
+            >下载导入模板</el-button
+          >
+        </a>
+
         <el-button type="primary" style="float: right" @click="handleAdd"
           >新增</el-button
         >
@@ -522,9 +542,9 @@ const handlePageChange = async (cp) => {
           align="center"
         ></el-table-column>
         <el-table-column
-          prop="create_time"
-          label="创建时间"
-          width="230"
+          prop="type"
+          label="学生类型"
+          width="200"
           align="center"
         ></el-table-column>
         <el-table-column
@@ -573,7 +593,12 @@ const handlePageChange = async (cp) => {
 
     <!-- 编辑弹出框 -->
     <el-dialog title="编辑" v-model="editVisible" width="25%">
-      <el-form label-width="90px" :model="editForm" :rules="formRules">
+      <el-form
+        label-width="90px"
+        :model="editForm"
+        :rules="formRules"
+        ref="editFormRef"
+      >
         <el-form-item label="学生姓名" prop="name">
           <el-input v-model="editForm.name"></el-input>
         </el-form-item>
@@ -583,8 +608,21 @@ const handlePageChange = async (cp) => {
         <el-form-item label="准考证号" prop="student_id">
           <el-input v-model="editForm.student_id"></el-input>
         </el-form-item>
+        <el-form-item label="学生类型" prop="type">
+          <el-select v-model="editForm.type" placeholder="选择类型">
+            <el-option
+              v-for="item in typeStore.typeList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.name"
+            ></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="性别" prop="sex">
-          <el-input v-model="editForm.sex"></el-input>
+          <el-select v-model="editForm.sex" placeholder="性别">
+            <el-option label="男" value="男"></el-option>
+            <el-option label="女" value="女"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="班级" prop="class_num">
           <el-input v-model="editForm.class_num"></el-input>
@@ -610,22 +648,41 @@ const handlePageChange = async (cp) => {
         ref="addFormRef"
       >
         <el-form-item label="学生姓名" prop="name">
-          <el-input v-model="addForm.name"></el-input>
+          <el-input v-model="addForm.name" placeholder="学生姓名"></el-input>
         </el-form-item>
         <el-form-item label="身份证号" prop="id">
-          <el-input v-model="addForm.id"></el-input>
+          <el-input v-model="addForm.id" placeholder="身份证号"></el-input>
         </el-form-item>
         <el-form-item label="准考证号" prop="student_id">
-          <el-input v-model="addForm.student_id"></el-input>
+          <el-input
+            v-model="addForm.student_id"
+            placeholder="准考证号"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="学生类型" prop="type">
+          <el-select v-model="addForm.type" placeholder="选择类型">
+            <el-option
+              v-for="item in typeStore.typeList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.name"
+            ></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="性别" prop="sex">
-          <el-input v-model="addForm.sex"></el-input>
+          <el-select v-model="addForm.sex" placeholder="性别">
+            <el-option label="男" value="男"></el-option>
+            <el-option label="女" value="女"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="班级" prop="class_num">
-          <el-input v-model="addForm.class_num"></el-input>
+          <el-input v-model="addForm.class_num" placeholder="班级"></el-input>
         </el-form-item>
         <el-form-item label="入学时间" prop="admission_date">
-          <el-input v-model="addForm.admission_date"></el-input>
+          <el-input
+            v-model="addForm.admission_date"
+            placeholder="入学时间"
+          ></el-input>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -657,7 +714,7 @@ const handlePageChange = async (cp) => {
 }
 
 .handle-input {
-  width: 300px;
+  width: 200px;
 }
 .table {
   width: 100%;

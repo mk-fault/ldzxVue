@@ -161,7 +161,14 @@ const uploadImg = async (item) => {
 // 修改通知书内容
 const doEdit = async () => {
   const { id, text, school, time, type, web_path } = editForm.value;
-  const res = await offerStore.updateOfferContent({ id, text, school, time, type, web_path });
+  const res = await offerStore.updateOfferContent({
+    id,
+    text,
+    school,
+    time,
+    type,
+    web_path,
+  });
   // 当没有上传图片时，直接修改内容
   if (res.flag && !editForm.value.upload) {
     ElMessage.success("修改成功");
@@ -215,6 +222,8 @@ const handleDelete = async (row) => {
 
 /*------------ 通知书添加 --------------------*/
 const addVisible = ref(false);
+const addFormRef = ref(null);
+// 添加表单
 const addForm = ref({
   text: "",
   is_using: true,
@@ -224,6 +233,46 @@ const addForm = ref({
   time: "",
   web_path: "",
 });
+
+// 表单验证
+const formRules = {
+  text: [
+    {
+      required: true,
+      message: "通知书内容不能为空",
+      trigger: "blur",
+    },
+  ],
+  type: [
+    {
+      required: true,
+      message: "通知书类型不能为空",
+      trigger: "blur",
+    },
+  ],
+  school: [
+    {
+      required: true,
+      message: "落款学校不能为空",
+      trigger: "blur",
+    },
+  ],
+  time: [
+    {
+      required: true,
+      message: "发放时间不能为空",
+      trigger: "blur",
+    },
+  ],
+  web_path: [
+    {
+      required: true,
+      message: "服务器地址不能为空",
+      trigger: "blur",
+    },
+  ],
+};
+
 const handleAdd = () => {
   addVisible.value = true;
 };
@@ -255,29 +304,33 @@ const onExceedAdd = (files) => {
   uploadadd.value.handleStart(file);
 };
 // 上传图片逻辑
-const uploadAdd = async (item) => {
-  addForm.value.is_using = true;
-  let formData = new FormData();
-  formData.append("background_pic", item.file);
-  formData.append("text", addForm.value.text);
-  formData.append("is_using", addForm.value.is_using);
-  formData.append("school", addForm.value.school);
-  formData.append("type", addForm.value.type);
-  formData.append("time", addForm.value.time);
-  formData.append("web_path", addForm.value.web_path);
+const uploadAdd = (item) => {
+  addFormRef.value.validate(async (valid) => {
+    if (valid) {
+      addForm.value.is_using = true;
+      let formData = new FormData();
+      formData.append("background_pic", item.file);
+      formData.append("text", addForm.value.text);
+      formData.append("is_using", addForm.value.is_using);
+      formData.append("school", addForm.value.school);
+      formData.append("type", addForm.value.type);
+      formData.append("time", addForm.value.time);
+      formData.append("web_path", addForm.value.web_path);
 
-  const res = await offerStore.addOffer(formData);
-  if (res.flag) {
-    ElMessage.success("通知书添加成功");
-    addVisible.value = false;
-    await offerStore.getOfferInfo(query.value);
-    tableData.value = offerStore.offerInfo.results;
-    addForm.value = {};
-    uploadadd.value.clearFiles();
-  } else {
-    ElMessage.error("请添加通知书内容");
-    uploadadd.value.clearFiles();
-  }
+      const res = await offerStore.addOffer(formData);
+      if (res.flag) {
+        ElMessage.success("通知书添加成功");
+        addVisible.value = false;
+        await offerStore.getOfferInfo(query.value);
+        tableData.value = offerStore.offerInfo.results;
+        addForm.value = {};
+        uploadadd.value.clearFiles();
+      } else {
+        ElMessage.error("通知书添加失败");
+        uploadadd.value.clearFiles();
+      }
+    }
+  });
 };
 // 点击确认后执行添加
 const doAdd = () => {
@@ -307,7 +360,7 @@ const doAdd = () => {
         placeholder="类型选择"
         v-model="offerType"
         @change="handleTypeChange"
-        style="border: 1px skyblue solid;"
+        style="border: 1px skyblue solid"
       >
         <el-option
           v-for="item in typeStore.typeList"
@@ -439,7 +492,12 @@ const doAdd = () => {
       </el-dialog>
 
       <!-- 编辑弹出框 -->
-      <el-dialog title="编辑" v-model="editVisible" width="35%" @close="doCancel">
+      <el-dialog
+        title="编辑"
+        v-model="editVisible"
+        width="35%"
+        @close="doCancel"
+      >
         <el-form label-width="90px" label-position="left">
           <el-form-item label="通知书编号">
             <el-input v-model="editForm.id" disabled></el-input>
@@ -529,7 +587,13 @@ const doAdd = () => {
 
       <!-- 新增弹出框 -->
       <el-dialog title="新增通知书" v-model="addVisible" width="35%">
-        <el-form label-width="90px" label-position="left">
+        <el-form
+          label-width="120px"
+          label-position="left"
+          :rules="formRules"
+          :model="addForm"
+          ref="addFormRef"
+        >
           <el-form-item label="背景图片">
             <el-upload
               action="#"
@@ -548,7 +612,7 @@ const doAdd = () => {
               <el-button type="info">上传图片</el-button>
             </el-upload>
           </el-form-item>
-          <el-form-item label="通知书类型">
+          <el-form-item label="通知书类型" prop="type">
             <el-select v-model="addForm.type" placeholder="选择类型">
               <el-option
                 v-for="item in typeStore.typeList"
@@ -558,7 +622,7 @@ const doAdd = () => {
               ></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="通知书内容">
+          <el-form-item label="通知书内容" prop="text">
             <el-input
               v-model="addForm.text"
               type="textarea"
@@ -566,13 +630,13 @@ const doAdd = () => {
               placeholder="通知书内容"
             ></el-input>
           </el-form-item>
-          <el-form-item label="落款学校">
+          <el-form-item label="落款学校" prop="school">
             <el-input
               v-model="addForm.school"
               placeholder="落款学校"
             ></el-input>
           </el-form-item>
-          <el-form-item label="发放日期">
+          <el-form-item label="发放日期" prop="time">
             <el-config-provider :locale="local">
               <el-date-picker
                 v-model="addForm.time"
@@ -584,7 +648,7 @@ const doAdd = () => {
               />
             </el-config-provider>
           </el-form-item>
-          <el-form-item label="服务器地址">
+          <el-form-item label="服务器地址" prop="web_path">
             <el-input
               v-model="addForm.web_path"
               placeholder="服务器地址"
