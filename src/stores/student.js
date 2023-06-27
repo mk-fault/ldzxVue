@@ -21,7 +21,6 @@ export const useStudentStore = defineStore("student", () => {
     } else if (params.sex === "女") {
       params.sex = "0";
     }
-    console.log(params);
     await getStudentAPI(params).then((res, e) => {
       if (res.status === 200) {
         studentInfo.value = res.data;

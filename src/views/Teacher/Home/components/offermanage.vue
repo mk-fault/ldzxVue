@@ -2,7 +2,6 @@
 import { useOfferStore } from "@/stores/offer";
 import { ElMessage } from "element-plus";
 import "element-plus/theme-chalk/el-message.css";
-import { add } from "lodash";
 import { ref, onMounted } from "vue";
 
 const offerStore = useOfferStore();
