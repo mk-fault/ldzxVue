@@ -8,7 +8,7 @@ export const useTypeStore = defineStore("type", () => {
 
     // action
     // 获取类别信息
-    const getTypeInfo = async () => {
+    const getTypeList = async () => {
         await getTypeAPI().then((res, e) => {
             if (res.status === 200) {
                 typeList.value = res.data.results;
@@ -20,6 +20,6 @@ export const useTypeStore = defineStore("type", () => {
 
     return {
         typeList,
-        getTypeInfo
+        getTypeList
     }
 })

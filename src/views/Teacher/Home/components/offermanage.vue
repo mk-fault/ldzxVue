@@ -1,30 +1,48 @@
 <script setup>
 import { useOfferStore } from "@/stores/offer";
+import { useTypeStore } from "@/stores/type";
 import { ElMessage } from "element-plus";
 import "element-plus/theme-chalk/el-message.css";
 import { ref, onMounted } from "vue";
 
 const offerStore = useOfferStore();
+const typeStore = useTypeStore();
 
 /*------------ 通知书数据渲染 --------------------*/
+
+// 查询参数
+const query = ref({
+  page: 1,
+  type: "",
+});
+
 // 加载通知书信息
 const tableData = ref([]);
 const loading = ref({});
+const offerType = ref("");
 onMounted(async () => {
   await offerStore.getOfferInfo();
+  await typeStore.getTypeList();
   tableData.value = offerStore.offerInfo.results;
   tableData.value.forEach((item) => {
     loading.value[item.id] = false;
   });
 });
 
-// 分页查询
-const query = ref({
-  page: 1,
-});
 // 分页查询操作
 const handlePageChange = async (cp) => {
   query.value.page = cp;
+  await offerStore.getOfferInfo(query.value);
+  tableData.value = offerStore.offerInfo.results;
+  loading.value = {};
+  tableData.value.forEach((item) => {
+    loading.value[item.id] = false;
+  });
+};
+
+// 选择类型
+const handleTypeChange = async (val) => {
+  query.value.type = val;
   await offerStore.getOfferInfo(query.value);
   tableData.value = offerStore.offerInfo.results;
   loading.value = {};
@@ -269,10 +287,25 @@ const doAdd = () => {
         >新增</el-button
       >
 
+      <!-- 顶部类型选择 -->
+      <el-select
+        class="type-sel"
+        placeholder="类型选择"
+        v-model="offerType"
+        @change="handleTypeChange"
+      >
+        <el-option
+          v-for="item in typeStore.typeList"
+          :key="item.id"
+          :label="item.name"
+          :value="item.name"
+        ></el-option>
+      </el-select>
+
       <!-- 表格 -->
       <el-table
         :data="tableData"
-        border
+        border="true"
         height="774"
         class="table"
         ref="multipleTable"
@@ -280,11 +313,17 @@ const doAdd = () => {
       >
         <el-table-column
           prop="id"
-          label="通知书编号"
+          label="编号"
+          width="70"
+          align="center"
+        ></el-table-column>
+        <el-table-column
+          prop="type"
+          label="通知书类型"
           width="100"
           align="center"
         ></el-table-column>
-        <el-table-column label="背景图片" align="center" width="500">
+        <el-table-column label="背景图片" align="center" width="300">
           <template #default="scope">
             <el-image
               class="table-td-thumb"
@@ -299,7 +338,26 @@ const doAdd = () => {
         <el-table-column
           prop="text"
           label="通知书内容"
-          width="529"
+          width="400"
+          header-align="center"
+        ></el-table-column>
+        <el-table-column
+          prop="school"
+          label="落款学校"
+          width="150"
+          align="center"
+        ></el-table-column>
+        <el-table-column
+          prop="time"
+          label="发放时间"
+          width="150"
+          align="center"
+        ></el-table-column>
+        <el-table-column
+          prop="web_path"
+          label="服务器地址"
+          width="150"
+          align="center"
         ></el-table-column>
         <el-table-column
           prop="is_using"
@@ -316,18 +374,19 @@ const doAdd = () => {
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="350" align="center">
+        <el-table-column label="操作" width="150" align="center">
           <template #default="scope">
+            <el-button v-show="false" type="primary">编辑</el-button>
             <el-button
               type="success"
               @click="handlePreview(scope.row)"
               v-loading="loading[scope.row.id]"
               >预览</el-button
             >
-            <el-button type="primary" @click="handleEdit(scope.row)"
+            <el-button type="primary" @click="handleEdit(scope.row)" style="margin-top: 10px;"
               >编辑</el-button
             >
-            <el-button type="danger" @click="handleDelete(scope.row)"
+            <el-button type="danger" @click="handleDelete(scope.row)" style="margin-top: 10px;"
               >删除</el-button
             >
           </template>
@@ -354,7 +413,6 @@ const doAdd = () => {
         width="35%"
         align-center="true"
         center="true"
-        @closed="previewClose"
       >
         <img :src="imgUrl" alt="" class="offerImg" />
       </el-dialog>
@@ -462,6 +520,9 @@ const doAdd = () => {
 </template>
 
 <style scoped>
+.type-sel {
+  float: left;
+}
 .editImg {
   width: 100px;
   height: 100px;

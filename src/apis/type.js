@@ -1,8 +1,9 @@
 import httpInstance from "@/utils/http";
 
 // 获取类别信息API
-export const getTypeAPI = () => {
+export const getTypeAPI = (params = {}) => {
     return httpInstance({
-        url: "student/types/",
+      url: "student/types/",
+      params,
     });
-}
+  };
