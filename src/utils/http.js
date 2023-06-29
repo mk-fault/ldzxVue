@@ -12,11 +12,12 @@ const httpInstance = axios.create({
   timeout: 5000,
 });
 
+const userStore = useUserStore();
+
 // axios请求拦截器
 httpInstance.interceptors.request.use(
   (config) => {
-    // 从pinia中获取token
-    const userStore = useUserStore();
+    // 从pinia中获取token 
     // 拼接token
     const token = userStore.userInfo.access
     if (token) {
@@ -35,6 +36,8 @@ httpInstance.interceptors.response.use(
     // ElMessage.error(e.response.data.msg);
     // 401错误处理
     if (e.response.status === 401) {
+        // 清除token
+        userStore.clearUserInfo()
       router.push('/teacher/login')
     }
     // return Promise.reject(e);
